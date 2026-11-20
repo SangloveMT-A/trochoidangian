@@ -1,0 +1,3536 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <!-- Khai báo chuẩn mã hóa ký tự tiếng Việt UTF-8 -->
+    <meta charset="UTF-8">
+    <!-- Thiết lập khung nhìn chuẩn Responsive cho cả điện thoại và máy tính -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Tiêu đề hiển thị trên tab trình duyệt -->
+    <title>Hội Làng Ơi - Ký Ức Trò Chơi Dân Gian Xứ Huế</title>
+
+    <!-- ===================================================================== -->
+    <!-- BƯỚC 1: CẤU HÌNH FIREBASE CỦA BẠN Ở NGAY ĐẦU TỆP (THAY MÃ CỦA BẠN VÀO) -->
+    <!-- ===================================================================== -->
+    <script>
+        // Chức năng: Khai báo biến toàn cục chứa thông số kết nối Firebase của bạn (Hãy thay các chuỗi bên dưới bằng mã từ Firebase Console -> Project Settings)
+        window.CUSTOM_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBR0i0evDpOR3ASrfl1b4Hcvb-_ssd8_6Y",
+            authDomain: "memaybeo01.firebaseapp.com",
+            databaseURL: "https://memaybeo01-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "memaybeo01",
+            storageBucket: "memaybeo01.firebasestorage.app",
+            messagingSenderId: "811199279426",
+            appId: "1:811199279426:web:3f1d18003be246c09a18db",
+            measurementId: "G-416SFVTG4V"
+        };
+
+        // Chức năng: Đặt tên thư mục gốc lưu dữ liệu phòng chơi trên Firestore / Realtime Database
+        window.FIREBASE_APP_NAMESPACE = "hoi_lang_oi_hue_v1";
+    </script>
+
+    <!-- Nạp SDK Firebase App, Auth và Firestore từ CDN chính thức của Google -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <!-- Nạp thư viện Tailwind CSS để tạo giao diện hiện đại, đáp ứng mọi kích thước màn hình -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Nạp phông chữ Inter và Playfair Display mang âm hưởng Cố đô Huế -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* Chức năng: Định nghĩa bảng màu đặc trưng Lễ hội Cung đình & Sân đình xứ Huế */
+        :root {
+            --hue-crimson: #b91c1c;
+            --hue-gold: #d97706;
+            --hue-amber: #f59e0b;
+            --hue-indigo: #1e3a8a;
+            --hue-jade: #0f766e;
+            --hue-paper: #fdf8ee;
+        }
+
+        /* Chức năng: Thiết lập nền tối ấm áp và chống chọn bôi đen văn bản khi thao tác chơi game */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #16110e;
+            color: #fef3c7;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 18% 12%, rgba(185, 28, 28, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(217, 119, 6, 0.18) 0%, transparent 50%);
+        }
+
+        /* Chức năng: Áp dụng phông chữ nghệ thuật cổ điển cho các tiêu đề lớn */
+        .font-imperial {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Chức năng: Trang trí khung thanh menu điều hướng duy nhất bên trái */
+        .sidebar-shell {
+            background: linear-gradient(180deg, #1d1410 0%, #130d0a 100%);
+            border-right: 1px solid rgba(245, 158, 11, 0.28);
+        }
+
+        /* Chức năng: Hiệu ứng nút bấm trên thanh menu bên trái */
+        .sidebar-btn {
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-btn:hover {
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.35);
+        }
+
+        .sidebar-btn.active {
+            background: linear-gradient(90deg, rgba(185, 28, 28, 0.88) 0%, rgba(153, 27, 27, 0.45) 100%);
+            border-color: #f59e0b;
+            color: #fef3c7;
+            box-shadow: 0 4px 16px rgba(185, 28, 28, 0.42);
+        }
+
+        /* Chức năng: Trang trí khung Banner Header lễ hội phía trên bên phải */
+        .banner-hue {
+            background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 48%, #78350f 100%);
+            border: 2px solid #f59e0b;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+        }
+
+        /* Chức năng: Khung danh sách người chơi trẩy hội */
+        .roster-hue {
+            background: linear-gradient(145deg, #1f1713 0%, #17110e 100%);
+            border: 1.5px solid rgba(15, 118, 110, 0.65);
+        }
+
+        /* Chức năng: Khung chứa danh sách 11 trò chơi dân gian */
+        .games-hue {
+            background: linear-gradient(180deg, rgba(28, 20, 16, 0.94) 0%, rgba(19, 14, 11, 0.98) 100%);
+            border: 1.5px solid rgba(245, 158, 11, 0.55);
+        }
+
+        /* Chức năng: Thẻ từng trò chơi dân gian với hiệu ứng nổi khi di chuột */
+        .game-card {
+            background: linear-gradient(145deg, #241a15 0%, #18110e 100%);
+            border: 1px solid rgba(245, 158, 11, 0.24);
+            transition: all 0.2s ease;
+        }
+
+        .game-card:hover {
+            border-color: #f59e0b;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -6px rgba(217, 119, 6, 0.35);
+        }
+
+        /* Chức năng: Các nút bấm chủ đạo màu Đỏ Son, Ngọc Bích và Vàng Hoàng Kim */
+        .btn-hue-red {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border: 1px solid #fbbf24;
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+            transition: all 0.15s ease;
+        }
+
+        .btn-hue-red:hover {
+            filter: brightness(1.08);
+        }
+
+        .btn-hue-red:active {
+            transform: scale(0.97);
+        }
+
+        .btn-hue-jade {
+            background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+            border: 1px solid #5eead4;
+            box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+            transition: all 0.15s ease;
+        }
+
+        .btn-hue-jade:hover {
+            filter: brightness(1.08);
+        }
+
+        .btn-hue-jade:active {
+            transform: scale(0.97);
+        }
+
+        .btn-hue-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+            color: #1c1008;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+            transition: all 0.15s ease;
+        }
+
+        .btn-hue-gold:hover {
+            filter: brightness(1.08);
+        }
+
+        .btn-hue-gold:active {
+            transform: scale(0.97);
+        }
+
+        /* Chức năng: Tùy biến thanh trượt âm lượng nhạc đàn tranh */
+        input[type="range"].hue-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 999px;
+            background: #3a2a22;
+            outline: none;
+        }
+
+        input[type="range"].hue-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #f59e0b;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col lg:flex-row">
+
+    <!-- Khung hiển thị thông báo nổi góc phải trên (Thay thế alert) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ===================================================================== -->
+    <!-- 1. THANH MENU ĐIỀU HƯỚNG DUY NHẤT BÊN TRÁI (5 CHẾ ĐỘ + NHẠC NỀN)      -->
+    <!-- ===================================================================== -->
+    <aside id="sidebar-nav" class="sidebar-shell w-full lg:w-64 shrink-0 p-3 sm:p-4 flex flex-col justify-between z-30">
+        <div>
+            <!-- Logo Hội Làng Ơi -->
+            <div class="flex items-center justify-between lg:justify-start gap-3 px-2 py-2 mb-3 lg:mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-red-900/85 border-2 border-amber-400 flex items-center justify-center text-amber-300 font-imperial font-black text-base shadow">
+                        🏮
+                    </div>
+                    <div>
+                        <div class="font-imperial font-black text-sm tracking-wide text-amber-300 leading-tight">HỘI
+                            LÀNG ƠI</div>
+                        <div class="text-[10px] font-bold text-teal-300 uppercase tracking-wider">Ký Ức Xứ Huế</div>
+                    </div>
+                </div>
+                <!-- Bộ chỉnh nhạc nhanh hiển thị trên màn hình điện thoại -->
+                <div
+                    class="flex lg:hidden items-center gap-2 bg-stone-900 border border-amber-500/30 rounded-xl px-2.5 py-1.5">
+                    <button onclick="toggleBgmPlay()" class="text-xs font-bold text-amber-300"
+                        id="mobile-bgm-icon">🔇</button>
+                    <input type="range" min="0" max="100" value="45" oninput="setBgmVolume(this.value)"
+                        class="hue-slider w-16 bgm-vol-slider">
+                </div>
+            </div>
+
+            <!-- Danh sách 5 nút chuyển chế độ chơi -->
+            <nav class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5">
+                <button data-tab="home" onclick="switchNavigationTab('home')"
+                    class="sidebar-btn active w-full text-left px-3.5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-100/85 flex items-center gap-2.5">
+                    <span class="text-base">🏛️</span>
+                    <span>Trang chủ Hội Làng</span>
+                </button>
+
+                <button data-tab="friends" onclick="switchNavigationTab('friends')"
+                    class="sidebar-btn w-full text-left px-3.5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-100/85 flex items-center gap-2.5">
+                    <span class="text-base">👥</span>
+                    <span>Chơi cùng bạn bè</span>
+                </button>
+
+                <button data-tab="solo" onclick="switchNavigationTab('solo')"
+                    class="sidebar-btn w-full text-left px-3.5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-100/85 flex items-center gap-2.5">
+                    <span class="text-base">🎯</span>
+                    <span>Trẩy hội 11 vòng</span>
+                </button>
+
+                <button data-tab="coop_ai" onclick="switchNavigationTab('coop_ai')"
+                    class="sidebar-btn w-full text-left px-3.5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-100/85 flex items-center gap-2.5">
+                    <span class="text-base">🤖</span>
+                    <span>Đấu cùng dân làng AI</span>
+                </button>
+
+                <button data-tab="test_games" onclick="switchNavigationTab('test_games')"
+                    class="sidebar-btn col-span-2 sm:col-span-1 w-full text-left px-3.5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-100/85 flex items-center gap-2.5">
+                    <span class="text-base">🎮</span>
+                    <span>Chọn tự do 11 trò chơi</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Hộp điều khiển Nhạc Nền Đàn Tranh & Trạng thái Firebase (Desktop) -->
+        <div class="hidden lg:flex flex-col gap-2.5 mt-6 p-3.5 rounded-2xl bg-stone-900/95 border border-amber-500/30">
+            <div class="flex items-center justify-between">
+                <span
+                    class="text-[11px] font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                    <span>🎶</span> Nhạc Đàn Tranh Huế
+                </span>
+                <span class="text-[11px] font-bold text-amber-200 bgm-vol-label">45%</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <button onclick="toggleBgmPlay()" id="sidebar-bgm-btn"
+                    class="px-2.5 py-1.5 rounded-lg bg-red-900/70 hover:bg-red-800 border border-amber-400/50 text-amber-200 text-xs font-bold transition">
+                    ▶ Bật
+                </button>
+                <input type="range" min="0" max="100" value="45" oninput="setBgmVolume(this.value)"
+                    class="hue-slider flex-1 bgm-vol-slider">
+            </div>
+            <div
+                class="text-[10px] text-amber-200/75 flex items-center justify-between pt-1.5 border-t border-amber-500/20">
+                <span>Tiếng trống & hiệu ứng:</span>
+                <button onclick="toggleSfxMute()" id="sidebar-sfx-btn"
+                    class="text-teal-300 font-bold hover:underline">🔊 Đang bật</button>
+            </div>
+            <div
+                class="text-[10px] text-amber-200/75 flex items-center justify-between pt-1 border-t border-amber-500/20">
+                <span>Máy chủ phòng:</span>
+                <span id="sidebar-fb-status" class="font-bold text-amber-400">⏳ Chưa gắn mã</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===================================================================== -->
+    <!-- 2. KHU VỰC NỘI DUNG CHÍNH BÊN PHẢI (KHÔNG LỒNG MENU BÊN TRONG)        -->
+    <!-- ===================================================================== -->
+    <main id="main-content-wrapper" class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 sm:py-7 flex flex-col gap-6">
+
+        <!-- BANNER HEADER LỄ HỘI CỐ ĐÔ HUẾ (SẠCH SẼ, KHÔNG TRÙNG MENU) -->
+        <header class="banner-hue rounded-3xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex flex-col xl:flex-row items-center justify-between gap-5">
+
+                <!-- Biểu tượng Trống Hội & Tiêu đề chính -->
+                <div class="flex items-center gap-4">
+                    <div
+                        class="flex items-center gap-2 bg-stone-950/85 border-2 border-amber-400 px-3.5 py-3 rounded-2xl shadow-lg shrink-0">
+                        <span class="text-2xl sm:text-3xl">🥁</span>
+                        <span class="text-2xl sm:text-3xl">🏮</span>
+                    </div>
+                    <div>
+                        <div
+                            class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/60 text-amber-200 text-[10px] font-extrabold tracking-widest uppercase mb-1">
+                            <span>KÝ ỨC SÂN ĐÌNH XỨ HUẾ</span>
+                        </div>
+                        <h1 class="font-imperial text-xl sm:text-3xl font-black tracking-tight text-white uppercase">
+                            HỘI LÀNG <span class="text-amber-300">ƠI!</span>
+                        </h1>
+                        <p class="text-amber-100/85 text-xs sm:text-sm mt-0.5">
+                            Tuyển tập 11 trò chơi dân gian Cố đô — "Vui hội sân đình, rinh cờ trạng nguyên!"
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Thẻ Sửa Tên Nhân Vật, Quỹ Xu Lễ Hội & Bảng Vàng -->
+                <div class="flex flex-wrap items-center justify-center xl:justify-end gap-3 w-full xl:w-auto">
+
+                    <!-- Ô nhập sửa tên nhân vật trực tiếp -->
+                    <div
+                        class="bg-teal-950/85 border border-teal-400/60 rounded-2xl px-3.5 py-2 flex items-center gap-2.5">
+                        <div
+                            class="w-9 h-9 rounded-xl bg-teal-600 text-white font-black text-xs flex items-center justify-center border border-amber-300/60">
+                            HUẾ
+                        </div>
+                        <div>
+                            <label for="player-name-input"
+                                class="block text-[10px] uppercase tracking-wider text-teal-300 font-bold">
+                                Tên nhân vật ✎
+                            </label>
+                            <div class="flex items-center gap-1.5">
+                                <input id="player-name-input" type="text" maxlength="16" value="CẬU ẤM XỨ HUẾ"
+                                    oninput="updatePlayerProfile(false)"
+                                    onkeydown="if(event.key==='Enter'){updatePlayerProfile(true); this.blur();}"
+                                    class="bg-transparent text-white font-extrabold text-sm focus:outline-none uppercase w-28 sm:w-36 border-b border-amber-400/50 focus:border-amber-300">
+                                <button onclick="updatePlayerProfile(true)"
+                                    class="px-2 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[10px] uppercase tracking-wide transition">
+                                    Lưu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thẻ hiển thị tổng Xu Lễ Hội tích lũy -->
+                    <div class="bg-stone-950/90 border border-amber-400/60 rounded-2xl px-4 py-2 text-right">
+                        <div class="text-[10px] uppercase tracking-wider text-amber-400 font-bold">
+                            🪙 XU LỄ HỘI TÍCH LŨY
+                        </div>
+                        <div id="total-coins-display" class="font-black text-base sm:text-lg text-amber-300">
+                            0 Xu
+                        </div>
+                    </div>
+
+                    <!-- Nút mở Bảng Vàng xếp hạng -->
+                    <button onclick="openLeaderboardModal()"
+                        class="btn-hue-gold px-4 py-3 rounded-2xl font-black text-xs sm:text-sm flex items-center gap-1.5">
+                        <span>🏆</span>
+                        <span>BẢNG VÀNG</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================================================================= -->
+        <!-- TAB 1: TRANG CHỦ HỘI LÀNG (DANH SÁCH Ô NGƯỜI CHƠI + 11 TRÒ CHƠI)  -->
+        <!-- ================================================================= -->
+        <div id="tab-view-home" class="flex flex-col gap-6">
+            <!-- Khung Danh Sách Người Tham Gia Hội Làng -->
+            <section class="roster-hue rounded-3xl p-4 sm:p-5">
+                <div
+                    class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 mb-4 border-b border-teal-500/25">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse"></span>
+                            <h2 class="text-xs sm:text-sm font-black uppercase tracking-wider text-white">
+                                DANH SÁCH NGƯỜI TRẨY HỘI (<span id="home-filled-count"
+                                    class="text-teal-300">1</span>/<span id="home-capacity-count">8</span> ĐÃ VÀO SÂN)
+                            </h2>
+                        </div>
+                        <p class="text-xs text-amber-100/75 mt-1">
+                            Các ô trống đang chờ bạn bè tham gia. Bấm vào tên để sửa hoặc bấm <strong>"✕ Kích"</strong>
+                            để mời người chơi/AI ra khỏi sân!
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="addLocalHumanToHome()"
+                            class="px-3.5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 border border-teal-400/60 text-xs font-bold text-teal-300 transition">
+                            + Thêm Bạn Cùng Máy
+                        </button>
+                        <button onclick="fillRemainingWithAI('home')"
+                            class="px-3.5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400 text-xs font-extrabold text-amber-300 transition">
+                            🤖 Thêm Dân Làng AI cho đủ
+                        </button>
+                        <button onclick="clearAiAndResetHome()"
+                            class="px-3.5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-700 text-xs font-bold text-stone-400 transition">
+                            ↻ Làm trống
+                        </button>
+                        <button onclick="startHomeTournament()" id="btn-home-start"
+                            class="btn-hue-red px-4 py-2.5 rounded-xl font-black text-xs text-white shadow-lg">
+                            ▶ BẮT ĐẦU TRÒ 1
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lưới 8 ô thí sinh -->
+                <div id="home-roster-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
+            </section>
+
+            <!-- Lộ trình 11 Trò Chơi Dân Gian Xứ Huế (Mở sẵn 100%) -->
+            <section class="games-hue rounded-3xl p-4 sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <h2
+                        class="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-300 flex items-center gap-2">
+                        <span>🏮</span> TUYỂN TẬP 11 TRÒ CHƠI DÂN GIAN XỨ HUẾ (MỞ SẴN TOÀN BỘ)
+                    </h2>
+                    <span id="home-stage-label" class="text-xs font-bold text-teal-300">
+                        CHỌN TỰ DO 11 TRÒ • GỢI Ý: TRÒ 1 - ĐUA GHE SÔNG HƯƠNG
+                    </span>
+                </div>
+                <div id="home-games-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 2: CHƠI CÙNG BẠN BÈ (FIREBASE ONLINE & 2 NGƯỜI CHUNG MÁY)      -->
+        <!-- ================================================================= -->
+        <div id="tab-view-friends" class="hidden flex-col gap-6">
+            <section class="games-hue rounded-3xl p-6 sm:p-8 border-2 border-amber-400/60">
+                <div class="max-w-xl mx-auto flex flex-col items-center gap-4 text-center">
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <span
+                            class="px-3 py-1 rounded-full bg-red-900/60 border border-amber-400 text-amber-200 text-[11px] font-black uppercase tracking-widest">
+                            ĐẤU ĐÔI & PHÒNG FIREBASE TRỰC TUYẾN
+                        </span>
+                        <button onclick="openFirebaseQuickModal()"
+                            class="px-3 py-1 rounded-full bg-stone-900 hover:bg-stone-800 border border-teal-400/60 text-teal-300 text-[11px] font-bold transition">
+                            ⚙️ Dán mã Firebase nhanh
+                        </button>
+                    </div>
+
+                    <h2 class="font-imperial text-xl sm:text-2xl font-black text-white">RỦ BẠN TRẨY HỘI SÂN ĐÌNH</h2>
+                    <p class="text-xs text-amber-100/80">
+                        Bạn có thể tạo/vào phòng trực tuyến 4 ký tự qua <strong>Firebase Firestore</strong> hoặc đấu đôi
+                        2 người ngay trên cùng một máy!
+                    </p>
+
+                    <!-- Khối 1: Tạo & Vào phòng trực tuyến qua Firebase -->
+                    <div
+                        class="w-full p-4 rounded-2xl bg-stone-950/90 border border-amber-500/40 flex flex-col gap-3 text-left">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black uppercase tracking-wider text-amber-300">🌐 Phòng Hội Làng
+                                Firebase</span>
+                            <span id="fb-connection-badge" class="text-[11px] font-bold text-amber-400">Chế độ Offline /
+                                Chờ cấu hình Firebase</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button onclick="createFirebaseRoom()"
+                                class="btn-hue-red py-3 rounded-xl font-black text-xs text-white">
+                                🏮 TẠO PHÒNG MỚI (MÃ 4 KÝ TỰ)
+                            </button>
+
+                            <div class="flex items-center gap-2">
+                                <input id="join-room-code-input" type="text" maxlength="4" placeholder="MÃ PHÒNG"
+                                    class="w-full px-3 py-3 rounded-xl bg-stone-900 border border-teal-400/60 text-center text-white font-black text-sm uppercase tracking-widest focus:outline-none">
+                                <button onclick="joinFirebaseRoom()"
+                                    class="btn-hue-jade px-4 py-3 rounded-xl font-black text-xs text-white shrink-0">
+                                    VÀO PHÒNG
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hiển thị thông tin phòng đang kết nối -->
+                        <div id="active-fb-room-box"
+                            class="hidden p-3 rounded-xl bg-teal-950/60 border border-teal-400/60 text-xs text-teal-100 flex flex-col gap-2">
+                            <div class="flex items-center justify-between">
+                                <span>Mã phòng đang mở: <strong id="active-fb-room-code"
+                                        class="text-lg text-amber-300 tracking-widest ml-1">----</strong></span>
+                                <button onclick="copyRoomCodeToClipboard()"
+                                    class="px-2.5 py-1 rounded-lg bg-amber-500 text-stone-950 font-black text-[11px]">
+                                    📋 Sao chép mã
+                                </button>
+                            </div>
+                            <div id="active-fb-room-members" class="text-[11px] text-teal-200">Đang đồng bộ thành
+                                viên...</div>
+                        </div>
+                    </div>
+
+                    <!-- Khối 2: Đấu đôi 2 người chung một máy -->
+                    <div
+                        class="w-full p-4 rounded-2xl bg-stone-950/75 border border-teal-500/35 flex flex-col gap-3 text-left">
+                        <span class="text-xs font-black uppercase tracking-wider text-teal-300">⚔️ Đấu Đôi 2 Người Chung
+                            Máy</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-amber-300 mb-1">Người Chơi 1 (Phím
+                                    trái)</label>
+                                <input id="friends-p1-name" type="text" maxlength="16" value="CẬU ẤM XỨ HUẾ"
+                                    oninput="syncFriendName(1, this.value)"
+                                    class="w-full px-3 py-2.5 rounded-xl bg-stone-900 border border-amber-500/40 text-white font-bold text-xs uppercase focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-teal-300 mb-1">Người Chơi 2 (Phím
+                                    phải)</label>
+                                <input id="friends-p2-name" type="text" maxlength="16" value="CÔ TÔN NỮ"
+                                    oninput="syncFriendName(2, this.value)"
+                                    class="w-full px-3 py-2.5 rounded-xl bg-stone-900 border border-teal-500/40 text-white font-bold text-xs uppercase focus:outline-none">
+                            </div>
+                        </div>
+                        <button onclick="setupTwoPlayerLocalMode()"
+                            class="btn-hue-gold w-full py-3 rounded-xl font-black text-xs sm:text-sm">
+                            ▶ BẬT CHẾ ĐỘ 2 NGƯỜI CHUNG MÁY & CHỌN TRÒ CHƠI
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 3: TRẨY HỘI 11 VÒNG (CHƠI CÁ NHÂN XUYÊN SUỐT)                 -->
+        <!-- ================================================================= -->
+        <div id="tab-view-solo" class="hidden flex-col gap-6">
+            <section
+                class="games-hue rounded-3xl p-6 border-2 border-teal-400/50 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <span
+                        class="px-3 py-1 rounded-full bg-teal-900/60 border border-teal-400 text-teal-200 text-[11px] font-black uppercase">
+                        HÀNH TRÌNH TRẠNG NGUYÊN HỘI LÀNG
+                    </span>
+                    <h2 class="font-imperial text-xl sm:text-2xl font-black text-white mt-2">CHINH PHỤC LẦN LƯỢT 11 TRÒ
+                        CHƠI</h2>
+                    <p class="text-xs sm:text-sm text-amber-100/75 mt-1">
+                        Vượt qua từng trò chơi dân gian từ Đua Ghe Sông Hương đến Cờ Gánh để tích lũy Xu Lễ Hội tối đa.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <button onclick="resetSoloRun()"
+                        class="px-4 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-700 text-xs font-bold text-stone-300">
+                        ↻ Về lại Trò 1
+                    </button>
+                    <button onclick="startSoloRound()" id="btn-solo-start"
+                        class="btn-hue-jade px-5 py-3 rounded-xl font-black text-xs sm:text-sm text-white">
+                        ▶ BẮT ĐẦU TRÒ 1
+                    </button>
+                </div>
+            </section>
+            <div id="solo-games-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 4: ĐẤU CÙNG DÂN LÀNG AI (ĐỘI HÌNH 8 CAO THỦ XỨ HUẾ)           -->
+        <!-- ================================================================= -->
+        <div id="tab-view-coop_ai" class="hidden flex-col gap-6">
+            <section class="roster-hue rounded-3xl p-5 sm:p-6">
+                <div
+                    class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 mb-4 border-b border-teal-500/30">
+                    <div>
+                        <span
+                            class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400 text-amber-300 text-[11px] font-black uppercase">
+                            TRANH TÀI CÙNG 7 CAO THỦ LÀNG HUẾ
+                        </span>
+                        <h2 class="font-imperial text-xl sm:text-2xl font-black text-white mt-2">
+                            BẢNG PHONG THẦN HỘI LÀNG (<span id="coop-alive-count" class="text-teal-300">8</span> CAO
+                            THỦ)
+                        </h2>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <button onclick="resetCoopAiTournament()"
+                            class="px-4 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-700 text-xs font-bold text-stone-300">
+                            ↻ Đổi danh sách AI
+                        </button>
+                        <button onclick="startCoopAiRound()" id="btn-coop-start"
+                            class="btn-hue-red px-5 py-3 rounded-xl font-black text-xs sm:text-sm text-white">
+                            ▶ BẮT ĐẦU TRANH TÀI
+                        </button>
+                    </div>
+                </div>
+                <div id="coop-roster-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
+            </section>
+            <div id="coop-games-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 5: CHỌN TỰ DO 11 TRÒ CHƠI (MỞ KHÓA TOÀN BỘ)                   -->
+        <!-- ================================================================= -->
+        <div id="tab-view-test_games" class="hidden flex-col gap-6">
+            <section class="games-hue rounded-3xl p-5 sm:p-6 border-2 border-amber-400/60">
+                <span
+                    class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400 text-amber-300 text-[11px] font-black uppercase">
+                    SÂN CHƠI TỰ DO — MỞ KHÓA 100%
+                </span>
+                <h2 class="font-imperial text-xl sm:text-2xl font-black text-white mt-2">CHỌN BẤT KỲ TRÒ CHƠI DÂN GIAN
+                    NÀO ĐỂ THỬ SỨC</h2>
+                <p class="text-xs sm:text-sm text-amber-100/75 mt-1">
+                    Tất cả 11 trò chơi đều mở sẵn. Bấm vào thẻ trò chơi bất kỳ bên dưới để vào sới ngay!
+                </p>
+            </section>
+            <div id="test-games-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- MÀN HÌNH SỚI HỘI CHƠI GAME 2D HTML5 CANVAS                            -->
+    <!-- ===================================================================== -->
+    <div id="arena-screen"
+        class="hidden fixed inset-0 z-40 bg-stone-950/95 backdrop-blur-md overflow-y-auto flex flex-col items-center justify-between p-3 sm:p-5">
+        <!-- Thanh điều hướng trên cùng trong màn hình chơi game -->
+        <div
+            class="w-full max-w-4xl flex items-center justify-between gap-3 bg-stone-900/95 border border-amber-500/40 rounded-2xl px-4 py-2.5 mb-3">
+            <button onclick="returnToLobby()"
+                class="px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-200 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition">
+                <span>← VỀ HỘI LÀNG</span>
+            </button>
+
+            <div class="text-center">
+                <div id="arena-mode-badge" class="text-[10px] font-extrabold uppercase tracking-widest text-amber-400">
+                    TRÒ CHƠI 1 / 11</div>
+                <h2 id="arena-game-title" class="font-imperial font-black text-white text-sm sm:text-lg">ĐUA GHE SÔNG
+                    HƯƠNG</h2>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="restartCurrentGame()"
+                    class="px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-teal-300 font-bold text-xs"
+                    title="Chơi lại ván này">
+                    ↻ Chơi lại
+                </button>
+                <button onclick="toggleSfxMute()" class="px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-sm">
+                    <span id="arena-sfx-icon">🔊</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Vùng Sân Chơi Chính chứa Canvas của từng mini-game -->
+        <div id="arena-stage" class="w-full max-w-4xl flex-1 flex flex-col items-center justify-center relative"></div>
+
+        <!-- Lớp phủ Kết Thúc Ván Chơi -->
+        <div id="result-overlay"
+            class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="games-hue max-w-md w-full rounded-3xl p-6 sm:p-8 text-center border-2 border-amber-400"
+                id="result-card-box">
+                <div id="result-icon" class="text-5xl mb-2">🏆</div>
+                <div id="result-badge"
+                    class="inline-block px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase mb-2 bg-amber-500/20 text-amber-300 border border-amber-400">
+                    HOÀN THÀNH
+                </div>
+                <h3 id="result-title" class="font-imperial text-2xl sm:text-3xl font-black text-white mb-2">RĂNG MÀ HAY
+                    RỨA!</h3>
+                <p id="result-desc" class="text-amber-100/80 text-sm mb-5">Bạn đã giành chiến thắng thuyết phục!</p>
+
+                <div
+                    class="bg-stone-950 border border-amber-500/40 rounded-2xl p-3.5 mb-5 flex items-center justify-between">
+                    <span class="text-xs text-amber-200/70 font-bold uppercase">Phần thưởng lễ hội:</span>
+                    <span id="result-reward" class="font-black text-lg text-amber-300">+ 500 Xu</span>
+                </div>
+
+                <div id="result-actions" class="flex gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL BẢNG VÀNG TRẠNG NGUYÊN HỘI LÀNG                                 -->
+    <!-- ===================================================================== -->
+    <div id="leaderboard-modal"
+        class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="games-hue max-w-xl w-full rounded-3xl p-6 max-h-[85vh] flex flex-col border-2 border-amber-400">
+            <div class="flex items-center justify-between pb-4 border-b border-amber-500/25">
+                <div>
+                    <h3 class="font-imperial text-xl font-black text-amber-300 flex items-center gap-2">
+                        <span>🏆</span> BẢNG VÀNG HỘI LÀNG XỨ HUẾ
+                    </h3>
+                    <p class="text-xs text-amber-100/70 mt-0.5">Vinh danh các cao thủ trẩy hội xuất sắc nhất</p>
+                </div>
+                <button onclick="closeLeaderboardModal()"
+                    class="w-9 h-9 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-200 font-bold">✕</button>
+            </div>
+            <div class="overflow-y-auto my-4 flex-1">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[11px] uppercase text-amber-300/80 border-b border-amber-500/20">
+                            <th class="py-2.5 px-3">Hạng</th>
+                            <th class="py-2.5 px-3">Người trẩy hội</th>
+                            <th class="py-2.5 px-3 text-center">Trò thắng</th>
+                            <th class="py-2.5 px-3 text-right">Xu tích lũy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-tbody" class="divide-y divide-amber-500/15 text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODAL DÁN NHANH MÃ CẤU HÌNH FIREBASE                                  -->
+    <!-- ===================================================================== -->
+    <div id="firebase-quick-modal"
+        class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="games-hue max-w-lg w-full rounded-3xl p-6 border-2 border-teal-400 flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-imperial text-lg font-black text-teal-300">⚙️ DÁN NHANH MÃ FIREBASE CONFIG</h3>
+                <button onclick="closeFirebaseQuickModal()"
+                    class="w-8 h-8 rounded-lg bg-stone-800 text-amber-200 font-bold">✕</button>
+            </div>
+            <p class="text-xs text-amber-100/80 leading-relaxed">
+                Dán đoạn JSON cấu hình lấy từ <strong>Firebase Console &rarr; Project Settings</strong> vào ô bên dưới
+                để kết nối phòng chơi trực tuyến ngay lập tức:
+            </p>
+            <textarea id="firebase-json-textarea" rows="7"
+                placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "...", "storageBucket": "...", "messagingSenderId": "...", "appId": "..."}'
+                class="w-full p-3 rounded-2xl bg-stone-950 border border-teal-500/50 text-xs font-mono text-teal-200 focus:outline-none"></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeFirebaseQuickModal()"
+                    class="px-4 py-2.5 rounded-xl bg-stone-800 text-xs font-bold text-stone-300">Đóng</button>
+                <button onclick="applyQuickFirebaseJson()"
+                    class="btn-hue-jade px-5 py-2.5 rounded-xl text-xs font-black text-white">✓ Lưu & Kết Nối</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- KỊCH BẢN TOÀN BỘ HỆ THỐNG FIREBASE, ÂM THANH & 11 MINI-GAMES          -->
+    <!-- ===================================================================== -->
+    <script>
+        // =====================================================================
+        // A. KẾT NỐI FIREBASE (TẠO PHÒNG & VÀO PHÒNG TRỰC TUYẾN)
+        // =====================================================================
+        let fbDb = null; // Chức năng: Lưu đối tượng kết nối cơ sở dữ liệu Firestore
+        let fbAuth = null; // Chức năng: Lưu đối tượng xác thực người dùng ẩn danh Firebase
+        let fbUserUid = null; // Chức năng: Lưu mã định danh UID của người chơi hiện tại trên Firebase
+        let currentFirebaseRoomCode = null; // Chức năng: Lưu mã phòng 4 ký tự đang tham gia
+        let roomUnsubscribe = null; // Chức năng: Lưu hàm hủy lắng nghe thay đổi phòng theo thời gian thực
+
+        // Chức năng: Khởi tạo kết nối Firebase từ cấu hình đặt ở đầu tệp HTML hoặc từ LocalStorage
+        async function initFirebaseService(customObj = null) {
+            try {
+                // Chức năng: Ưu tiên cấu hình người dùng mới dán, sau đó tới LocalStorage, cuối cùng là biến đầu file
+                const savedRaw = localStorage.getItem("hue_custom_firebase_json");
+                let cfg = customObj || (savedRaw ? JSON.parse(savedRaw) : window.CUSTOM_FIREBASE_CONFIG);
+
+                // Chức năng: Kiểm tra xem người dùng đã thay thế apiKey mẫu hay chưa
+                if (!cfg || !cfg.apiKey || cfg.apiKey.includes("DAN_API_KEY")) {
+                    updateFirebaseUiStatus(false, "Chưa gắn mã Firebase");
+                    return false;
+                }
+
+                // Chức năng: Khởi tạo ứng dụng Firebase nếu chưa tồn tại, hoặc cập nhật lại nếu thay cấu hình mới
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(cfg);
+                }
+                fbAuth = firebase.auth(); // Chức năng: Lấy dịch vụ Firebase Authentication
+                fbDb = firebase.firestore(); // Chức năng: Lấy dịch vụ Firebase Cloud Firestore
+
+                // Chức năng: Đăng nhập ẩn danh để lấy quyền đọc/ghi phòng chơi
+                const cred = await fbAuth.signInAnonymously();
+                fbUserUid = cred.user ? cred.user.uid : `guest_${Date.now()}`;
+
+                updateFirebaseUiStatus(true, `Đã kết nối (${cfg.projectId})`);
+                return true;
+            } catch (err) {
+                console.warn("Lỗi khởi tạo Firebase:", err);
+                updateFirebaseUiStatus(false, "Lỗi cấu hình Firebase");
+                return false;
+            }
+        }
+
+        // Chức năng: Cập nhật nhãn trạng thái kết nối Firebase trên giao diện
+        function updateFirebaseUiStatus(isConnected, labelText) {
+            const sStatus = document.getElementById("sidebar-fb-status");
+            const fBadge = document.getElementById("fb-connection-badge");
+            if (sStatus) {
+                sStatus.textContent = isConnected ? "🟢 Trực tuyến" : "🟡 Offline";
+                sStatus.className = isConnected ? "font-bold text-teal-300" : "font-bold text-amber-400";
+            }
+            if (fBadge) {
+                fBadge.textContent = isConnected ? `🟢 ${labelText}` : `🟡 ${labelText}`;
+                fBadge.className = isConnected ? "text-[11px] font-bold text-teal-300" : "text-[11px] font-bold text-amber-400";
+            }
+        }
+
+        // Chức năng: Mở hộp thoại dán nhanh mã cấu hình JSON Firebase
+        function openFirebaseQuickModal() {
+            document.getElementById("firebase-quick-modal").classList.remove("hidden");
+        }
+
+        // Chức năng: Đóng hộp thoại dán nhanh mã cấu hình JSON Firebase
+        function closeFirebaseQuickModal() {
+            document.getElementById("firebase-quick-modal").classList.add("hidden");
+        }
+
+        // Chức năng: Phân tích chuỗi JSON người dùng dán vào và kích hoạt Firebase ngay
+        async function applyQuickFirebaseJson() {
+            const raw = (document.getElementById("firebase-json-textarea").value || "").trim();
+            try {
+                // Chức năng: Cho phép dán cả object JS không có ngoặc kép ở tên thuộc tính
+                const normalized = raw.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+                const parsed = JSON.parse(normalized);
+                if (!parsed.apiKey || !parsed.projectId) {
+                    showToast("Thiếu trường apiKey hoặc projectId!", "info");
+                    return;
+                }
+                localStorage.setItem("hue_custom_firebase_json", JSON.stringify(parsed));
+                const ok = await initFirebaseService(parsed);
+                if (ok) {
+                    closeFirebaseQuickModal();
+                    folkAudio.playGood();
+                    showToast("Đã kết nối thành công với Firebase của bạn!", "success");
+                } else {
+                    showToast("Không thể kết nối Firebase, hãy kiểm tra lại cấu hình & Anonymous Auth!", "info");
+                }
+            } catch (e) {
+                showToast("Định dạng JSON chưa hợp lệ, vui lòng kiểm tra lại!", "info");
+            }
+        }
+
+        // Chức năng: Tạo phòng chơi trực tuyến với mã ngẫu nhiên 4 ký tự trên Firestore
+        async function createFirebaseRoom() {
+            const code = Math.random().toString(36).substring(2, 6).toUpperCase(); // Chức năng: Sinh mã 4 ký tự in hoa
+            currentFirebaseRoomCode = code;
+
+            if (fbDb && fbUserUid) {
+                try {
+                    const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(code); // Chức năng: Trỏ tới tài liệu phòng trên Firestore
+                    await roomRef.set({
+                        code: code,
+                        hostUid: fbUserUid,
+                        createdAt: Date.now(),
+                        members: [{ uid: fbUserUid, name: playerProfile.name, isHost: true }]
+                    });
+                    listenToFirebaseRoom(code); // Chức năng: Bật lắng nghe người chơi mới tham gia phòng
+                    folkAudio.playGood();
+                    showToast(`Đã tạo phòng trực tuyến Firebase: ${code}`, "success");
+                    return;
+                } catch (err) {
+                    console.warn("Lỗi ghi phòng Firestore:", err);
+                }
+            }
+
+            // Chức năng: Dự phòng hiển thị mã phòng cục bộ nếu chưa cấu hình Firebase
+            document.getElementById("active-fb-room-box").classList.remove("hidden");
+            document.getElementById("active-fb-room-code").textContent = code;
+            document.getElementById("active-fb-room-members").textContent = `Chủ phòng: ${playerProfile.name} (Hãy dán mã Firebase để đồng bộ qua mạng)`;
+            folkAudio.playGood();
+            showToast(`Đã tạo mã phòng Hội Làng: ${code}`, "success");
+        }
+
+        // Chức năng: Tham gia vào phòng chơi có sẵn bằng mã 4 ký tự trên Firestore
+        async function joinFirebaseRoom() {
+            const code = (document.getElementById("join-room-code-input").value || "").trim().toUpperCase();
+            if (code.length < 4) {
+                showToast("Vui lòng nhập đủ 4 ký tự mã phòng!", "info");
+                return;
+            }
+            if (!fbDb || !fbUserUid) {
+                showToast("Bạn chưa gắn cấu hình Firebase! Bấm '⚙️ Dán mã Firebase nhanh' để kết nối online.", "info");
+                return;
+            }
+            try {
+                const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(code);
+                const snap = await roomRef.get();
+                if (!snap.exists) {
+                    showToast(`Không tìm thấy phòng mã ${code}!`, "info");
+                    return;
+                }
+                const data = snap.data();
+                const members = Array.isArray(data.members) ? data.members : [];
+                if (!members.some(m => m.uid === fbUserUid)) {
+                    members.push({ uid: fbUserUid, name: playerProfile.name, isHost: false });
+                    await roomRef.update({ members });
+                }
+                currentFirebaseRoomCode = code;
+                listenToFirebaseRoom(code);
+                folkAudio.playGood();
+                showToast(`Đã vào phòng Hội Làng ${code}!`, "success");
+            } catch (e) {
+                showToast("Lỗi khi tham gia phòng Firebase!", "info");
+            }
+        }
+
+        // Chức năng: Lắng nghe danh sách thành viên trong phòng Firebase theo thời gian thực
+        function listenToFirebaseRoom(code) {
+            if (roomUnsubscribe) roomUnsubscribe();
+            const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(code);
+            roomUnsubscribe = roomRef.onSnapshot(doc => {
+                if (!doc.exists) return;
+                const data = doc.data();
+                const members = data.members || [];
+                document.getElementById("active-fb-room-box").classList.remove("hidden");
+                document.getElementById("active-fb-room-code").textContent = code;
+                document.getElementById("active-fb-room-members").textContent =
+                    `Thành viên trong phòng (${members.length}/8): ` + members.map(m => m.name).join(" • ");
+            });
+        }
+
+        // Chức năng: Sao chép mã phòng 4 ký tự vào khay nhớ tạm (Clipboard)
+        function copyRoomCodeToClipboard() {
+            if (!currentFirebaseRoomCode) return;
+            const tempInput = document.createElement("input");
+            tempInput.value = currentFirebaseRoomCode;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            showToast(`Đã sao chép mã phòng: ${currentFirebaseRoomCode}`, "success");
+        }
+
+        // =====================================================================
+        // B. HỆ THỐNG ÂM THANH DÂN GIAN (ĐÀN TRANH NGŨ CUNG & TRỐNG HỘI)
+        // =====================================================================
+        class HueFolkSoundSystem {
+            constructor() {
+                this.ctx = null; // Chức năng: Lưu đối tượng Web Audio API Context
+                this.sfxMuted = false; // Chức năng: Cờ bật/tắt hiệu ứng âm thanh
+                this.bgmPlaying = false; // Chức năng: Cờ kiểm tra nhạc nền đang phát hay dừng
+                this.bgmVolume = 0.45; // Chức năng: Mức âm lượng nhạc nền mặc định (45%)
+                this.bgmInterval = null; // Chức năng: Bộ đếm nhịp phát từng nốt đàn tranh
+                this.noteStep = 0; // Chức năng: Chỉ số nốt nhạc hiện tại trong giai điệu
+            }
+
+            // Chức năng: Khởi tạo hoặc kích hoạt lại Web Audio Context khi người dùng tương tác
+            ensureContext() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+            }
+
+            // Chức năng: Bắt đầu phát giai điệu ngũ cung Đàn Tranh xứ Huế
+            startBgm() {
+                this.ensureContext();
+                if (!this.ctx || this.bgmPlaying) return;
+                this.bgmPlaying = true;
+                this.updateButtons();
+
+                // Chức năng: Thang âm ngũ cung Huế (C5 - D5 - F5 - G5 - A5)
+                const pentatonic = [
+                    523.25, 587.33, 698.46, 783.99, 880.00, 783.99, 698.46, 587.33,
+                    523.25, 392.00, 440.00, 523.25, 587.33, 0, 523.25, 0
+                ];
+
+                this.bgmInterval = setInterval(() => {
+                    if (!this.bgmPlaying || !this.ctx || this.bgmVolume <= 0.01) return;
+                    if (this.ctx.state === "suspended") this.ctx.resume();
+                    const freq = pentatonic[this.noteStep % pentatonic.length];
+                    const now = this.ctx.currentTime;
+
+                    if (freq > 0) {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = "triangle"; // Chức năng: Tạo âm sắc thanh thoát giống tiếng gảy đàn tranh
+                        osc.frequency.setValueAtTime(freq, now);
+                        osc.frequency.linearRampToValueAtTime(freq * 1.012, now + 0.18); // Chức năng: Hiệu ứng nhấn dây ngân nhẹ
+                        const peak = this.bgmVolume * 0.16;
+                        gain.gain.setValueAtTime(peak, now);
+                        gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.42);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.44);
+                    }
+                    this.noteStep++;
+                }, 420);
+            }
+
+            // Chức năng: Dừng phát nhạc nền đàn tranh
+            stopBgm() {
+                this.bgmPlaying = false;
+                if (this.bgmInterval) {
+                    clearInterval(this.bgmInterval);
+                    this.bgmInterval = null;
+                }
+                this.updateButtons();
+            }
+
+            // Chức năng: Đảo trạng thái Bật / Tắt nhạc nền
+            toggleBgm() {
+                if (this.bgmPlaying) {
+                    this.stopBgm();
+                    showToast("Đã tạm dừng nhạc đàn tranh", "info");
+                } else {
+                    this.startBgm();
+                    showToast(`Đang phát nhạc Đàn Tranh Huế (${Math.round(this.bgmVolume * 100)}%)`, "success");
+                }
+            }
+
+            // Chức năng: Điều chỉnh mức âm lượng từ 0% đến 100%
+            setVolume(val) {
+                const v = Math.max(0, Math.min(100, Number(val)));
+                this.bgmVolume = v / 100;
+                document.querySelectorAll(".bgm-vol-slider").forEach(el => el.value = v);
+                document.querySelectorAll(".bgm-vol-label").forEach(el => el.textContent = `${v}%`);
+                if (v > 0 && !this.bgmPlaying) this.startBgm();
+                this.updateButtons();
+            }
+
+            // Chức năng: Đồng bộ chữ và biểu tượng trên nút bật/tắt nhạc
+            updateButtons() {
+                const active = this.bgmPlaying && this.bgmVolume > 0;
+                const sBtn = document.getElementById("sidebar-bgm-btn");
+                const mIcon = document.getElementById("mobile-bgm-icon");
+                if (sBtn) sBtn.textContent = active ? "⏸ Tắt" : "▶ Bật";
+                if (mIcon) mIcon.textContent = active ? "🎶" : "🔇";
+            }
+
+            // Chức năng: Hàm phát một âm thanh hiệu ứng đơn lẻ theo tần số và thời lượng
+            tone(freq, dur = 0.12, type = "triangle", vol = 0.15, delay = 0) {
+                if (this.sfxMuted) return;
+                try {
+                    this.ensureContext();
+                    if (!this.ctx) return;
+                    const t = this.ctx.currentTime + delay;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, t);
+                    gain.gain.setValueAtTime(vol, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + dur);
+                } catch (e) { }
+            }
+
+            playDrum() { // Chức năng: Phát tiếng trống cái lễ hội trầm hùng
+                this.tone(130, 0.16, "sine", 0.25, 0);
+                this.tone(85, 0.22, "triangle", 0.2, 0.02);
+            }
+
+            playRimShot() { // Chức năng: Phát tiếng gõ tang trống / thanh tre
+                this.tone(720, 0.06, "square", 0.14, 0);
+            }
+
+            playGood() { // Chức năng: Phát âm thanh ghi điểm / thắng nhịp
+                this.tone(587.33, 0.09, "triangle", 0.15, 0);
+                this.tone(880, 0.14, "triangle", 0.15, 0.07);
+            }
+
+            playFail() { // Chức năng: Phát âm thanh va chạm / trượt nhịp
+                this.tone(180, 0.18, "sawtooth", 0.16, 0);
+                this.tone(130, 0.24, "sawtooth", 0.16, 0.1);
+            }
+
+            playWin() { // Chức năng: Phát khúc nhạc khải hoàn khi chiến thắng trò chơi
+                [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.tone(f, 0.22, "triangle", 0.18, i * 0.1));
+            }
+        }
+
+        const folkAudio = new HueFolkSoundSystem(); // Chức năng: Khởi tạo bộ quản lý âm thanh dùng chung toàn trang
+        function toggleBgmPlay() { folkAudio.toggleBgm(); } // Chức năng: Gắn sự kiện nút bật/tắt nhạc nền
+        function setBgmVolume(val) { folkAudio.setVolume(val); } // Chức năng: Gắn sự kiện thanh trượt âm lượng
+        function toggleSfxMute() { // Chức năng: Bật/tắt tiếng trống và hiệu ứng
+            folkAudio.sfxMuted = !folkAudio.sfxMuted;
+            const sBtn = document.getElementById("sidebar-sfx-btn");
+            const aIcon = document.getElementById("arena-sfx-icon");
+            if (sBtn) sBtn.textContent = folkAudio.sfxMuted ? "🔇 Đã tắt" : "🔊 Đang bật";
+            if (aIcon) aIcon.textContent = folkAudio.sfxMuted ? "🔇" : "🔊";
+        }
+
+        // Chức năng: Tự động kích hoạt nhạc đàn tranh ở lần chạm đầu tiên của người chơi
+        window.addEventListener("pointerdown", function initMusicOnce() {
+            if (!folkAudio.bgmPlaying && folkAudio.bgmVolume > 0) folkAudio.startBgm();
+            window.removeEventListener("pointerdown", initMusicOnce);
+        }, { once: true });
+
+        // =====================================================================
+        // C. DANH SÁCH 11 TRÒ CHƠI DÂN GIAN XỨ HUẾ (ĐẦY ĐỦ 11 TRÒ)
+        // =====================================================================
+        const HUE_FOLK_GAMES = [
+            {
+                id: "duaghe",
+                roundNum: 1,
+                round: "TRÒ 1",
+                title: "Đua Ghe Sông Hương",
+                genre: "Nhịp điệu & Tốc độ",
+                controlText: "Space / Chạm nhịp trống",
+                desc: "Bấm đúng nhịp trống hội để ghe lướt sóng qua Cầu Trường Tiền, tích 5 nhịp kích hoạt 'Hò Dô Ta' bứt tốc về đích!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#1e3a8a"/><path d="M0 72 Q30 64 60 72 T120 72 L120 120 L0 120 Z" fill="#0284c7"/><path d="M18 76 Q60 92 102 76 L92 66 Q60 76 28 66 Z" fill="#dc2626" stroke="#fbbf24" stroke-width="2.5"/><circle cx="38" cy="58" r="5" fill="#fde047"/><circle cx="55" cy="58" r="5" fill="#fde047"/><circle cx="72" cy="58" r="5" fill="#fde047"/><polygon points="98,48 112,56 98,64" fill="#f59e0b"/></svg>`
+            },
+            {
+                id: "keoco",
+                roundNum: 2,
+                round: "TRÒ 2",
+                title: "Kéo Co Hội Làng",
+                genre: "Sức mạnh & Nhịp điệu",
+                controlText: "Phím A (P1) / Phím L (P2) / Chạm",
+                desc: "Căn đúng nhịp kim vào vùng xanh trống hội để kéo dải lụa đỏ vượt qua vạch vôi trắng sân đình. Hỗ trợ 1P đấu AI hoặc 2P chung máy!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#451a03"/><rect x="0" y="75" width="120" height="45" fill="#78350f"/><line x1="60" y1="75" x2="60" y2="120" stroke="#ffffff" stroke-width="3" stroke-dasharray="4 3"/><line x1="12" y1="62" x2="108" y2="62" stroke="#eab308" stroke-width="5"/><polygon points="60,62 54,78 66,78" fill="#ef4444"/><circle cx="30" cy="48" r="8" fill="#38bdf8"/><circle cx="90" cy="48" r="8" fill="#f43f5e"/></svg>`
+            },
+            {
+                id: "dauvat",
+                roundNum: 3,
+                round: "TRÒ 3",
+                title: "Đấu Vật Làng Sình (Đối Kháng)",
+                genre: "Đối kháng 2D Street Fighter",
+                controlText: "Di chuyển A/D • Đấm J • Đá K • Đỡ L • Nộ Space",
+                desc: "Sàn đấu đối kháng 2D kiểu Street Fighter trên sới vật Làng Sình! Thanh máu HP đối xứng, đồng hồ 99s, tung combo Đấm, Đá, Đỡ và Tuyệt Chiêu Vật Ngã!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#7c2d12"/><rect x="8" y="10" width="44" height="6" rx="3" fill="#22c55e"/><rect x="68" y="10" width="44" height="6" rx="3" fill="#22c55e"/><circle cx="60" cy="13" r="7" fill="#f59e0b"/><ellipse cx="60" cy="92" rx="50" ry="18" fill="#d97706" stroke="#fef3c7" stroke-width="2.5"/><circle cx="40" cy="54" r="10" fill="#fed7aa"/><rect x="30" y="64" width="20" height="22" rx="4" fill="#dc2626"/><circle cx="80" cy="54" r="10" fill="#fed7aa"/><rect x="70" y="64" width="20" height="22" rx="4" fill="#1d4ed8"/></svg>`
+            },
+            {
+                id: "nhayday",
+                roundNum: 4,
+                round: "TRÒ 4",
+                title: "Nhảy Dây Sân Đình",
+                genre: "Nhịp điệu & Phản xạ",
+                controlText: "Space / Chạm để nhảy",
+                desc: "Quan sát bóng dây quét qua sân gạch đỏ và bấm nhảy đúng nhịp. Tốc độ tăng dần sau mỗi 4 vòng!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#7f1d1d"/><rect x="0" y="88" width="120" height="32" fill="#991b1b"/><path d="M22 65 Q60 112 98 65" fill="none" stroke="#fde047" stroke-width="4"/><circle cx="60" cy="46" r="9" fill="#fed7aa"/><rect x="52" y="56" width="16" height="22" rx="4" fill="#0d9488"/></svg>`
+            },
+            {
+                id: "nhaybaobo",
+                roundNum: 5,
+                round: "TRÒ 5",
+                title: "Nhảy Bao Bố",
+                genre: "Vượt chướng ngại vật",
+                controlText: "Nhấn giữ nạp lực & Thả nhảy",
+                desc: "Giữ chuột hoặc Space để nạp lực theo đường parabol, thả ra để nhảy vọt qua vũng bùn trên sân đình về đích!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#14532d"/><rect x="0" y="84" width="120" height="36" fill="#92400e"/><rect x="44" y="54" width="28" height="34" rx="6" fill="#d97706" stroke="#fef3c7" stroke-width="2"/><circle cx="58" cy="42" r="9" fill="#fed7aa"/><ellipse cx="92" cy="92" rx="14" ry="5" fill="#451a03"/></svg>`
+            },
+            {
+                id: "dapnieu",
+                roundNum: 6,
+                round: "TRÒ 6",
+                title: "Đập Niêu Đất (Đập Om)",
+                genre: "Căn chỉnh thời điểm",
+                controlText: "Space / Chạm khóa thanh lực",
+                desc: "Bịt mắt cầm gậy tre đi ngang hàng niêu đất treo trên giàn. Bấm khóa thanh đo đúng vùng xanh lá để vung gậy đập vỡ niêu!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#312e81"/><line x1="15" y1="22" x2="105" y2="22" stroke="#d97706" stroke-width="4"/><line x1="60" y1="22" x2="60" y2="42" stroke="#fef3c7" stroke-width="2"/><circle cx="60" cy="54" r="14" fill="#b45309" stroke="#fde68a" stroke-width="2"/><line x1="40" y1="98" x2="68" y2="66" stroke="#fde047" stroke-width="5" stroke-linecap="round"/></svg>`
+            },
+            {
+                id: "banbi",
+                roundNum: 7,
+                round: "TRÒ 7",
+                title: "Bắn Bi Vòng Tròn",
+                genre: "Khéo léo & Vật lý 2D",
+                controlText: "Kéo ngược chuột/tay & Thả",
+                desc: "Góc nhìn từ trên xuống nền cát vàng. Kéo ngược bi cái ngắm hướng và lực búng làm văng toàn bộ bi mục tiêu ra khỏi vòng tròn trắng!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#78350f"/><circle cx="60" cy="55" r="36" fill="none" stroke="#ffffff" stroke-width="3"/><circle cx="52" cy="48" r="8" fill="#ef4444"/><circle cx="68" cy="52" r="8" fill="#3b82f6"/><circle cx="58" cy="64" r="8" fill="#10b981"/><circle cx="60" cy="102" r="9" fill="#f8fafc"/></svg>`
+            },
+            {
+                id: "casau",
+                roundNum: 8,
+                round: "TRÒ 8",
+                title: "Cá Sấu Lên Bờ",
+                genre: "Rượt đuổi & Sinh tồn",
+                controlText: "Mũi tên / WASD di chuyển",
+                desc: "Nhảy xuống nước nhặt xu thưởng và hồi thanh Gan Dạ, sau đó chạy lên bờ thềm đình trước khi Cá Sấu tuần tra lao tới!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#0369a1"/><rect x="0" y="0" width="120" height="26" fill="#b45309"/><rect x="0" y="94" width="120" height="26" fill="#b45309"/><rect x="34" y="50" width="44" height="18" rx="9" fill="#15803d"/><polygon points="78,52 94,59 78,66" fill="#16a34a"/><circle cx="32" cy="36" r="7" fill="#fde047"/></svg>`
+            },
+            {
+                id: "cuopco",
+                roundNum: 9,
+                round: "TRÒ 9",
+                title: "Cướp Cờ Sân Đình",
+                genre: "Tốc độ & Đối kháng",
+                controlText: "Di chuyển 4 hướng (P1: WASD, P2: Mũi tên)",
+                desc: "Chờ quản trò hô hiệu lệnh rồi lao ra tâm sân chộp cờ chạy về nhà mà không để đối thủ đuổi chạm người. Ai đạt 3 điểm trước thắng!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#064e3b"/><circle cx="60" cy="60" r="24" fill="none" stroke="#fef3c7" stroke-width="2.5"/><line x1="60" y1="32" x2="60" y2="74" stroke="#ffffff" stroke-width="3"/><polygon points="60,32 84,41 60,50" fill="#ef4444"/><circle cx="28" cy="60" r="9" fill="#38bdf8"/><circle cx="92" cy="60" r="9" fill="#f59e0b"/></svg>`
+            },
+            {
+                id: "oanquan",
+                roundNum: 10,
+                round: "TRÒ 10",
+                title: "Ô Ăn Quan Chiếu Cói",
+                genre: "Trí tuệ & Chiến thuật",
+                controlText: "Chạm chọn ô dân & hướng rải",
+                desc: "Bàn cờ 10 ô dân và 2 ô Quan bán nguyệt trên nền chiếu cói. Rải sỏi thông minh để ăn chuỗi liên tiếp và thu phục cả 2 ô Quan!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#713f12"/><rect x="24" y="36" width="72" height="48" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="3"/><path d="M24 36 A24 24 0 0 0 24 84 Z" fill="#fde68a" stroke="#b45309" stroke-width="3"/><path d="M96 36 A24 24 0 0 1 96 84 Z" fill="#fde68a" stroke="#b45309" stroke-width="3"/><line x1="24" y1="60" x2="96" y2="60" stroke="#b45309" stroke-width="2"/><circle cx="44" cy="48" r="4" fill="#57534e"/><circle cx="76" cy="72" r="4" fill="#57534e"/></svg>`
+            },
+            {
+                id: "coganh",
+                roundNum: 11,
+                round: "TRÒ 11",
+                title: "Cờ Gánh Xứ Huế (5x5)",
+                genre: "Trí tuệ & Cờ bàn",
+                controlText: "Chạm chọn quân & điểm đến",
+                desc: "Di chuyển quân xen vào chính giữa 2 quân địch trên đường thẳng ngang, dọc hoặc chéo để 'gánh' và lật màu biến cả hai thành quân của mình!",
+                svgIcon: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect width="120" height="120" rx="18" fill="#3f2305"/><rect x="24" y="24" width="72" height="72" fill="#f5deb3" stroke="#d97706" stroke-width="3"/><line x1="24" y1="24" x2="96" y2="96" stroke="#92400e" stroke-width="2"/><line x1="96" y1="24" x2="24" y2="96" stroke="#92400e" stroke-width="2"/><circle cx="38" cy="60" r="8" fill="#dc2626"/><circle cx="60" cy="60" r="8" fill="#1d4ed8"/><circle cx="82" cy="60" r="8" fill="#dc2626"/></svg>`
+            }
+        ];
+
+        // Chức năng: Danh sách tên các nhân vật dân làng AI đậm chất xứ Huế
+        const HUE_AI_VILLAGERS = [
+            "O TÝ ĐẬP ĐÁ", "ANH HAI VĨ DẠ", "MỆ NỘI KIM LONG", "CẬU BA PHÚ CAM",
+            "CHỊ TƯ BẾN NGỰ", "CHÚ NĂM GIA HỘI", "O SÁU ĐÔNG BA", "BÁC BẢY LÀNG SÌNH"
+        ];
+
+        // =====================================================================
+        // D. QUẢN LÝ TRẠNG THÁI 5 CHẾ ĐỘ CHƠI & DỮ LIỆU NGƯỜI CHƠI
+        // =====================================================================
+        let activeTab = "home"; // Chức năng: Lưu tab menu bên trái đang mở
+        let activePlayMode = "home"; // Chức năng: Lưu chế độ chơi hiện tại khi vào game
+        let currentActiveGameId = "duaghe"; // Chức năng: Lưu ID trò chơi đang chạy
+        let activeCleanup = null; // Chức năng: Lưu hàm dọn dẹp vòng lặp & sự kiện phím khi thoát trò chơi
+
+        // Chức năng: Hồ sơ thông tin người chơi chính và người chơi 2
+        let playerProfile = {
+            id: "main_p1",
+            name: "CẬU ẤM XỨ HUẾ",
+            p2Name: "CÔ TÔN NỮ",
+            coins: 0,
+            wins: 0
+        };
+
+        let homeState = { capacity: 8, roundIndex: 0, slots: [] }; // Chức năng: Trạng thái danh sách thí sinh trên Trang chủ
+        let soloState = { roundIndex: 0 }; // Chức năng: Tiến độ chế độ Trẩy hội 11 vòng
+        let coopAiState = { roundIndex: 0, villagers: [] }; // Chức năng: Trạng thái đội hình đấu cùng AI
+        let isTwoPlayerLocal = false; // Chức năng: Cờ bật chế độ 2 người chơi chung một bàn phím
+        let editingSlotIndex = null; // Chức năng: Lưu chỉ số ô đang được bấm để sửa tên trực tiếp
+
+        // Chức năng: Tạo đối tượng ô trống chưa có người tham gia
+        function createEmptySlot(idx) {
+            return { slotIndex: idx, isEmpty: true, id: `empty_${idx}`, name: "Ô TRỐNG", isHuman: false, isBot: false };
+        }
+
+        // Chức năng: Làm trống các ô phụ trên Trang chủ, chỉ giữ lại chủ phòng ở vị trí #01
+        function clearAiAndResetHome() {
+            editingSlotIndex = null;
+            const slots = [{
+                slotIndex: 0,
+                isEmpty: false,
+                id: playerProfile.id,
+                name: playerProfile.name,
+                isHuman: true,
+                isBot: false
+            }];
+            for (let i = 1; i < 8; i++) slots.push(createEmptySlot(i));
+            homeState = { capacity: 8, roundIndex: 0, slots };
+            renderAllViews();
+        }
+
+        // Chức năng: Khởi tạo danh sách 8 cao thủ cho tab Đấu cùng dân làng AI
+        function resetCoopAiTournament() {
+            const list = [{
+                slotIndex: 0, isEmpty: false, id: playerProfile.id, name: playerProfile.name, isHuman: true, isBot: false
+            }];
+            HUE_AI_VILLAGERS.slice(0, 7).forEach((vName, idx) => {
+                list.push({
+                    slotIndex: idx + 1, isEmpty: false, id: `hue_ai_${idx}`, name: vName, isHuman: false, isBot: true
+                });
+            });
+            coopAiState = { roundIndex: 0, villagers: list };
+            renderAllViews();
+        }
+
+        // Chức năng: Đặt lại lộ trình Trẩy hội cá nhân về lại Trò 1
+        function resetSoloRun() {
+            soloState.roundIndex = 0;
+            renderAllViews();
+            showToast("Đã đặt lại hành trình Trẩy Hội từ Trò 1!", "success");
+        }
+
+        // Chức năng: Cập nhật tên nhân vật chính từ ô nhập trên Banner Header
+        function updatePlayerProfile(notify = false) {
+            const nameVal = (document.getElementById("player-name-input").value || "CẬU ẤM XỨ HUẾ").trim().toUpperCase();
+            playerProfile.name = nameVal;
+            const f1 = document.getElementById("friends-p1-name");
+            if (f1 && f1.value !== nameVal) f1.value = nameVal;
+
+            [homeState.slots, coopAiState.villagers].forEach(arr => {
+                const me = arr.find(s => s.id === playerProfile.id);
+                if (me) me.name = nameVal;
+            });
+            renderAllViews();
+            if (notify) {
+                folkAudio.playGood();
+                showToast(`Đã lưu tên nhân vật: ${nameVal}`, "success");
+            }
+        }
+
+        // Chức năng: Bật ô nhập trực tiếp ngay trên thẻ người chơi trong danh sách Trang chủ
+        function startInlineEditSlot(idx) {
+            const slot = homeState.slots[idx];
+            if (!slot || slot.isEmpty) return;
+            editingSlotIndex = idx;
+            renderRosterCards(homeState.slots, "home-roster-grid");
+            const inp = document.getElementById(`inline-slot-input-${idx}`);
+            if (inp) {
+                inp.focus();
+                inp.select();
+            }
+        }
+
+        // Chức năng: Lưu tên mới sau khi chỉnh sửa trực tiếp trên thẻ thí sinh
+        function commitInlineEditSlot(idx) {
+            const slot = homeState.slots[idx];
+            const inp = document.getElementById(`inline-slot-input-${idx}`);
+            if (!slot || !inp) {
+                editingSlotIndex = null;
+                renderRosterCards(homeState.slots, "home-roster-grid");
+                return;
+            }
+            const clean = (inp.value || "").trim().toUpperCase();
+            if (clean) {
+                slot.name = clean;
+                if (slot.id === playerProfile.id) {
+                    playerProfile.name = clean;
+                    const topInput = document.getElementById("player-name-input");
+                    if (topInput) topInput.value = clean;
+                    const f1 = document.getElementById("friends-p1-name");
+                    if (f1) f1.value = clean;
+                    const coopMe = coopAiState.villagers.find(s => s.id === playerProfile.id);
+                    if (coopMe) coopMe.name = clean;
+                } else if (slot.isHuman && idx === 1) {
+                    playerProfile.p2Name = clean;
+                    const f2 = document.getElementById("friends-p2-name");
+                    if (f2) f2.value = clean;
+                }
+                folkAudio.playGood();
+                showToast(`Đã đổi tên thành viên #0${idx + 1} thành "${clean}"!`, "success");
+            }
+            editingSlotIndex = null;
+            renderAllViews();
+        }
+
+        // Chức năng: Kích (đuổi) người chơi phụ hoặc AI ra khỏi danh sách trên Trang chủ
+        function kickPlayerFromHome(idx) {
+            if (idx === 0) {
+                showToast("Không thể kích chủ phòng khỏi sân hội!", "info");
+                return;
+            }
+            const target = homeState.slots[idx];
+            if (!target || target.isEmpty) return;
+            const kickedName = target.name;
+            if (editingSlotIndex === idx) editingSlotIndex = null;
+            homeState.slots[idx] = createEmptySlot(idx);
+            folkAudio.playFail();
+            renderAllViews();
+            showToast(`Đã kích "${kickedName}" khỏi danh sách trẩy hội!`, "info");
+        }
+
+        // Chức năng: Đồng bộ tên P1 và P2 trong tab Chơi cùng bạn bè
+        function syncFriendName(num, val) {
+            const clean = (val || "").trim().toUpperCase();
+            if (num === 1) {
+                document.getElementById("player-name-input").value = clean;
+                updatePlayerProfile();
+            } else {
+                playerProfile.p2Name = clean || "CÔ TÔN NỮ";
+            }
+        }
+
+        // Chức năng: Chuyển đổi giữa 5 tab điều hướng trên thanh menu bên trái
+        function switchNavigationTab(tabKey) {
+            activeTab = tabKey;
+            document.querySelectorAll("#sidebar-nav .sidebar-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.tab === tabKey);
+            });
+            ["home", "friends", "solo", "coop_ai", "test_games"].forEach(k => {
+                const el = document.getElementById(`tab-view-${k}`);
+                if (el) {
+                    el.classList.toggle("hidden", k !== tabKey);
+                    el.classList.toggle("flex", k === tabKey);
+                }
+            });
+            renderAllViews();
+        }
+
+        // Chức năng: Thêm một người chơi chung máy vào ô trống tiếp theo trên Trang chủ
+        function addLocalHumanToHome() {
+            const emptyIdx = homeState.slots.findIndex(s => s.isEmpty);
+            if (emptyIdx === -1) {
+                showToast("Sân hội đã đủ 8 người tham gia!", "info");
+                return;
+            }
+            const humanCount = homeState.slots.filter(s => !s.isEmpty && s.isHuman).length + 1;
+            homeState.slots[emptyIdx] = {
+                slotIndex: emptyIdx,
+                isEmpty: false,
+                id: `local_p_${Date.now()}`,
+                name: humanCount === 2 ? playerProfile.p2Name : `BẠN HỘI ${humanCount}`,
+                isHuman: true,
+                isBot: false
+            };
+            folkAudio.playGood();
+            renderAllViews();
+            showToast(`Đã thêm ${homeState.slots[emptyIdx].name} vào sân hội!`, "success");
+        }
+
+        // Chức năng: Lấp đầy các ô còn trống bằng các nhân vật Dân Làng AI xứ Huế
+        function fillRemainingWithAI(context) {
+            let added = 0;
+            let cursor = 0;
+            homeState.slots = homeState.slots.map((s, idx) => {
+                if (!s.isEmpty) return s;
+                const aiName = HUE_AI_VILLAGERS[cursor % HUE_AI_VILLAGERS.length];
+                cursor++;
+                added++;
+                return { slotIndex: idx, isEmpty: false, id: `ai_${idx}`, name: aiName, isHuman: false, isBot: true };
+            });
+            if (added === 0) {
+                showToast("Tất cả các ô đã có người tham gia!", "info");
+                return;
+            }
+            folkAudio.playDrum();
+            renderAllViews();
+            showToast(`Đã mời thêm ${added} dân làng AI vào sới hội!`, "success");
+        }
+
+        // Chức năng: Kích hoạt chế độ đấu đôi 2 người chung máy và chuyển sang danh sách chọn game
+        function setupTwoPlayerLocalMode() {
+            isTwoPlayerLocal = true;
+            switchNavigationTab("test_games");
+            showToast(`Đã bật chế độ Đấu Đôi 2 Người (${playerProfile.name} vs ${playerProfile.p2Name})! Hãy chọn trò chơi bên dưới.`, "success");
+        }
+
+        function startHomeTournament() { // Chức năng: Bắt đầu trò chơi hiện tại từ Trang chủ
+            activePlayMode = "home";
+            const g = HUE_FOLK_GAMES[homeState.roundIndex] || HUE_FOLK_GAMES[0];
+            launchArenaGame(g.id, "home");
+        }
+
+        function startSoloRound() { // Chức năng: Bắt đầu trò chơi hiện tại từ tab Trẩy hội 11 vòng
+            activePlayMode = "solo";
+            const g = HUE_FOLK_GAMES[soloState.roundIndex] || HUE_FOLK_GAMES[0];
+            launchArenaGame(g.id, "solo");
+        }
+
+        function startCoopAiRound() { // Chức năng: Bắt đầu trò chơi hiện tại từ tab Đấu cùng dân làng AI
+            activePlayMode = "coop_ai";
+            const g = HUE_FOLK_GAMES[coopAiState.roundIndex] || HUE_FOLK_GAMES[0];
+            launchArenaGame(g.id, "coop_ai");
+        }
+
+        // Chức năng: Mở trực tiếp bất kỳ trò chơi nào khi người dùng bấm vào thẻ trò chơi
+        function launchDirectGame(gameId, modeKey) {
+            const idx = HUE_FOLK_GAMES.findIndex(g => g.id === gameId);
+            if (idx !== -1) {
+                if (modeKey === "home") homeState.roundIndex = idx;
+                else if (modeKey === "solo") soloState.roundIndex = idx;
+                else if (modeKey === "coop_ai") coopAiState.roundIndex = idx;
+            }
+            launchArenaGame(gameId, modeKey);
+        }
+
+        // =====================================================================
+        // E. RENDER GIAO DIỆN CÁC DANH SÁCH THẺ GAME & Ô THÍ SINH
+        // =====================================================================
+        function renderRosterCards(slots, containerId) {
+            const box = document.getElementById(containerId);
+            if (!box) return;
+            const isHomeRoster = containerId === "home-roster-grid";
+
+            box.innerHTML = slots.map((s, idx) => {
+                if (s.isEmpty) {
+                    return `
+                        <div class="px-3 py-2.5 rounded-xl border border-dashed border-stone-700 bg-stone-950/50 text-stone-500 text-xs flex items-center justify-between">
+                            <span>#0${idx + 1} Ô TRỐNG</span>
+                            <span>⏳</span>
+                        </div>
+                    `;
+                }
+                const isMe = s.id === playerProfile.id;
+
+                if (isHomeRoster && editingSlotIndex === idx) {
+                    return `
+                        <div class="px-2.5 py-2 rounded-xl border-2 border-amber-400 bg-stone-900 text-xs flex items-center gap-1.5 shadow-lg">
+                            <input id="inline-slot-input-${idx}" type="text" maxlength="16" value="${s.name}"
+                                   onkeydown="if(event.key==='Enter'){commitInlineEditSlot(${idx});} else if(event.key==='Escape'){editingSlotIndex=null; renderRosterCards(homeState.slots, 'home-roster-grid');}"
+                                   onblur="commitInlineEditSlot(${idx})"
+                                   class="flex-1 min-w-0 bg-stone-950 text-amber-200 font-extrabold uppercase px-2 py-1 rounded-lg border border-amber-400/60 focus:outline-none">
+                            <button onmousedown="event.preventDefault(); commitInlineEditSlot(${idx})"
+                                    class="px-2 py-1 rounded-lg bg-teal-600 text-white font-black text-[10px] shrink-0">
+                                ✓
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="px-3 py-2.5 rounded-xl border text-xs flex items-center justify-between gap-1.5 ${isMe
+                        ? "bg-teal-900/40 border-teal-400 text-white font-extrabold"
+                        : s.isHuman
+                            ? "bg-red-950/50 border-amber-400/70 text-amber-200 font-bold"
+                            : "bg-stone-900 border-stone-700 text-amber-100/80"
+                    }">
+                        <button type="button"
+                                ${isHomeRoster ? `onclick="startInlineEditSlot(${idx})"` : ""}
+                                title="${isHomeRoster ? "Bấm để sửa tên nhân vật" : s.name}"
+                                class="flex-1 min-w-0 text-left truncate flex items-center gap-1 ${isHomeRoster ? "hover:text-amber-300 cursor-pointer" : ""}">
+                            <span class="truncate">${s.name}</span>
+                            ${isHomeRoster ? `<span class="text-[10px] opacity-75 shrink-0">✎</span>` : ""}
+                        </button>
+
+                        <div class="flex items-center gap-1 shrink-0">
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-black/30">${isMe ? "★" : s.isBot ? "AI" : "👤"}</span>
+                            ${isHomeRoster && idx > 0 ? `
+                                <button type="button"
+                                        onclick="kickPlayerFromHome(${idx})"
+                                        title="Kích người chơi này khỏi phòng"
+                                        class="px-1.5 py-0.5 rounded-md bg-rose-900/80 hover:bg-rose-600 border border-rose-400/50 text-rose-200 hover:text-white font-black text-[10px] transition">
+                                    ✕ Kích
+                                </button>
+                            ` : ""}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // Chức năng: Hiển thị lưới 11 thẻ trò chơi dân gian (tất cả đều mở khóa sẵn)
+        function renderGameCardsGrid(containerId, modeKey, currentRoundIdx) {
+            const grid = document.getElementById(containerId);
+            if (!grid) return;
+
+            grid.innerHTML = HUE_FOLK_GAMES.map((game, idx) => {
+                const isSelectedRound = idx === currentRoundIdx;
+                return `
+                    <div onclick="launchDirectGame('${game.id}', '${modeKey}')"
+                         class="game-card rounded-3xl p-4 sm:p-5 flex items-center gap-4 relative overflow-hidden cursor-pointer ${isSelectedRound ? "border-2 border-amber-400" : "border border-amber-500/35"
+                    }">
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shrink-0 border-2 border-amber-400/70 overflow-hidden shadow-lg">
+                            ${game.svgIcon}
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="text-[11px] font-black tracking-wider uppercase text-amber-400">
+                                    ${game.round} • ${game.genre}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full bg-teal-500/20 border border-teal-400/50 text-teal-200 text-[10px] font-black">
+                                    MỞ SẴN
+                                </span>
+                            </div>
+                            <h3 class="font-imperial text-base sm:text-lg font-black text-white truncate">${game.title}</h3>
+                            <p class="text-xs text-amber-100/75 line-clamp-2 mt-1 leading-relaxed">${game.desc}</p>
+                            <div class="mt-2.5 flex items-center justify-between gap-2">
+                                <span class="text-[10px] text-teal-300 font-semibold truncate">🎮 ${game.controlText}</span>
+                                <span class="shrink-0 inline-flex items-center gap-1 text-xs font-black text-white bg-red-700 hover:bg-red-600 px-3 py-1 rounded-xl border border-amber-400/60">
+                                    CHƠI NGAY ▶
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // Chức năng: Cập nhật toàn bộ giao diện các tab và số liệu Xu tích lũy
+        function renderAllViews() {
+            document.getElementById("total-coins-display").textContent = `${playerProfile.coins.toLocaleString("vi-VN")} Xu`;
+
+            const filledCount = homeState.slots.filter(s => !s.isEmpty).length;
+            document.getElementById("home-filled-count").textContent = filledCount;
+            document.getElementById("home-capacity-count").textContent = homeState.capacity;
+            renderRosterCards(homeState.slots, "home-roster-grid");
+
+            const curHomeGame = HUE_FOLK_GAMES[homeState.roundIndex] || HUE_FOLK_GAMES[0];
+            document.getElementById("home-stage-label").textContent = `CHỌN TỰ DO 11 TRÒ • GỢI Ý: ${curHomeGame.round} - ${curHomeGame.title.toUpperCase()}`;
+            document.getElementById("btn-home-start").textContent = `▶ BẮT ĐẦU ${curHomeGame.round}`;
+            renderGameCardsGrid("home-games-grid", "home", homeState.roundIndex);
+
+            const curSoloGame = HUE_FOLK_GAMES[soloState.roundIndex] || HUE_FOLK_GAMES[0];
+            document.getElementById("btn-solo-start").textContent = `▶ BẮT ĐẦU ${curSoloGame.round}`;
+            renderGameCardsGrid("solo-games-grid", "solo", soloState.roundIndex);
+
+            renderRosterCards(coopAiState.villagers, "coop-roster-grid");
+            const curCoopGame = HUE_FOLK_GAMES[coopAiState.roundIndex] || HUE_FOLK_GAMES[0];
+            document.getElementById("btn-coop-start").textContent = `▶ BẮT ĐẦU ${curCoopGame.round}`;
+            renderGameCardsGrid("coop-games-grid", "coop_ai", coopAiState.roundIndex);
+
+            renderGameCardsGrid("test-games-grid", "test_games", 0);
+        }
+
+        // =====================================================================
+        // F. BỘ ĐIỀU PHỐI MỞ & KẾT THÚC 11 MINI-GAMES
+        // =====================================================================
+        function hasSecondHumanPlayer() {
+            const homeHumans = homeState.slots.filter(s => !s.isEmpty && s.isHuman).length;
+            return isTwoPlayerLocal || homeHumans >= 2;
+        }
+
+        // Chức năng: Mở màn hình Sới Hội và nạp mã nguồn của trò chơi được chọn
+        function launchArenaGame(gameId, mode) {
+            if (document.activeElement && typeof document.activeElement.blur === "function") {
+                document.activeElement.blur();
+            }
+            if (activeCleanup) {
+                activeCleanup();
+                activeCleanup = null;
+            }
+
+            activePlayMode = mode;
+            currentActiveGameId = gameId;
+            const game = HUE_FOLK_GAMES.find(g => g.id === gameId) || HUE_FOLK_GAMES[0];
+
+            document.getElementById("arena-mode-badge").textContent = `${game.round} / 11 • ${game.genre.toUpperCase()}`;
+            document.getElementById("arena-game-title").textContent = game.title.toUpperCase();
+            document.getElementById("result-overlay").classList.add("hidden");
+            document.getElementById("arena-screen").classList.remove("hidden");
+
+            folkAudio.ensureContext();
+            folkAudio.playDrum();
+
+            const stage = document.getElementById("arena-stage");
+            stage.innerHTML = "";
+
+            const runners = {
+                duaghe: mountDuaGheGame,
+                keoco: mountKeoCoGame,
+                dauvat: mountDauVatGame,
+                nhayday: mountNhayDayGame,
+                nhaybaobo: mountNhayBaoBoGame,
+                dapnieu: mountDapNieuGame,
+                banbi: mountBanBiGame,
+                casau: mountCaSauGame,
+                cuopco: mountCuopCoGame,
+                oanquan: mountOAnQuanGame,
+                coganh: mountCoGanhGame
+            };
+
+            const mountFn = runners[game.id] || mountDuaGheGame;
+            activeCleanup = mountFn(stage, hasSecondHumanPlayer());
+        }
+
+        function restartCurrentGame() { launchArenaGame(currentActiveGameId, activePlayMode); } // Chức năng: Chơi lại ván hiện tại
+
+        function returnToLobby() { // Chức năng: Đóng màn hình chơi game và quay về sảnh chính
+            if (activeCleanup) {
+                activeCleanup();
+                activeCleanup = null;
+            }
+            document.getElementById("result-overlay").classList.add("hidden");
+            document.getElementById("arena-screen").classList.add("hidden");
+            renderAllViews();
+        }
+
+        // Chức năng: Hiển thị bảng tổng kết thắng/thua và cộng Xu Lễ Hội
+        function finishMiniGame(isVictory, headline, detailMsg, rewardCoins = 500) {
+            if (isVictory) {
+                folkAudio.playWin();
+                playerProfile.coins += rewardCoins;
+                playerProfile.wins += 1;
+                recordLeaderboard(playerProfile.name, playerProfile.coins, playerProfile.wins);
+
+                if (activePlayMode === "home") homeState.roundIndex = (homeState.roundIndex + 1) % HUE_FOLK_GAMES.length;
+                else if (activePlayMode === "solo") soloState.roundIndex = (soloState.roundIndex + 1) % HUE_FOLK_GAMES.length;
+                else if (activePlayMode === "coop_ai") coopAiState.roundIndex = (coopAiState.roundIndex + 1) % HUE_FOLK_GAMES.length;
+            } else {
+                folkAudio.playFail();
+            }
+
+            document.getElementById("result-icon").textContent = isVictory ? "🏆" : "🥁";
+            document.getElementById("result-badge").textContent = isVictory ? "CHIẾN THẮNG HỘI LÀNG" : "HẾT LƯỢT / THỬ LẠI";
+            document.getElementById("result-title").textContent = headline;
+            document.getElementById("result-desc").textContent = detailMsg;
+            document.getElementById("result-reward").textContent = isVictory ? `+ ${rewardCoins} Xu` : "+ 50 Xu Khuyến Khích";
+            if (!isVictory) playerProfile.coins += 50;
+
+            const curIdx = HUE_FOLK_GAMES.findIndex(g => g.id === currentActiveGameId);
+            const nextGame = HUE_FOLK_GAMES[(curIdx + 1) % HUE_FOLK_GAMES.length];
+
+            document.getElementById("result-actions").innerHTML = `
+                <button onclick="returnToLobby()" class="flex-1 py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-200 font-bold text-xs sm:text-sm">
+                    ← Về Hội Làng
+                </button>
+                <button onclick="restartCurrentGame()" class="flex-1 py-3 rounded-xl bg-teal-800 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm">
+                    ↻ Chơi Lại
+                </button>
+                <button onclick="launchArenaGame('${nextGame.id}', activePlayMode)" class="flex-1 py-3 rounded-xl btn-hue-gold font-black text-xs sm:text-sm">
+                    Trò Tiếp ▶
+                </button>
+            `;
+            document.getElementById("result-overlay").classList.remove("hidden");
+        }
+
+        // Chức năng: Lưu thành tích người chơi vào Bảng Vàng LocalStorage
+        function recordLeaderboard(name, coins, wins) {
+            const list = JSON.parse(localStorage.getItem("hue_hoi_lang_lb") || "[]");
+            const existing = list.find(x => x.name === name);
+            if (existing) {
+                existing.coins = Math.max(existing.coins, coins);
+                existing.wins = Math.max(existing.wins, wins);
+            } else {
+                list.push({ name, coins, wins });
+            }
+            list.sort((a, b) => b.coins - a.coins);
+            localStorage.setItem("hue_hoi_lang_lb", JSON.stringify(list.slice(0, 15)));
+        }
+
+        // Chức năng: Mở cửa sổ Bảng Vàng xếp hạng
+        function openLeaderboardModal() {
+            document.getElementById("leaderboard-modal").classList.remove("hidden");
+            let list = JSON.parse(localStorage.getItem("hue_hoi_lang_lb") || "[]");
+            if (list.length === 0) {
+                list = [
+                    { name: "TRẠNG NGUYÊN PHÚ XUÂN", wins: 11, coins: 5500 },
+                    { name: "O TÝ ĐẬP ĐÁ", wins: 7, coins: 3500 },
+                    { name: "ANH HAI VĨ DẠ", wins: 5, coins: 2500 }
+                ];
+            }
+            document.getElementById("leaderboard-tbody").innerHTML = list.map((r, i) => `
+                <tr class="hover:bg-stone-900/60">
+                    <td class="py-3 px-3 font-black text-amber-400">${i === 0 ? "👑" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</td>
+                    <td class="py-3 px-3 font-bold text-white">${r.name}</td>
+                    <td class="py-3 px-3 text-center text-teal-300 font-bold">${r.wins} trận</td>
+                    <td class="py-3 px-3 text-right font-black text-amber-300">${r.coins.toLocaleString("vi-VN")} Xu</td>
+                </tr>
+            `).join("");
+        }
+        function closeLeaderboardModal() { document.getElementById("leaderboard-modal").classList.add("hidden"); }
+
+        // Chức năng: Hiển thị hộp thông báo Toast ở góc màn hình
+        function showToast(msg, type = "info") {
+            const container = document.getElementById("toast-container");
+            const el = document.createElement("div");
+            el.className = `px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl border ${type === "success" ? "bg-teal-950/95 border-teal-400 text-teal-200" : "bg-stone-900/95 border-amber-400 text-amber-200"
+                }`;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 3200);
+        }
+
+        // =====================================================================
+        // G. TRIỂN KHAI CHI TIẾT ĐẦY ĐỦ 11 MINI-GAMES 2D HTML5 CANVAS
+        // =====================================================================
+
+        // ---------------------------------------------------------------------
+        // TRÒ 1: ĐUA GHE SÔNG HƯƠNG (Nhịp điệu trống hội & Hò Dô Ta bứt tốc)
+        // ---------------------------------------------------------------------
+        function mountDuaGheGame(stage) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-3">
+                    <canvas id="c-duaghe" width="800" height="420" class="w-full rounded-3xl border-2 border-amber-400 bg-sky-950 shadow-2xl"></canvas>
+                    <button id="btn-dg-paddle" class="btn-hue-red w-full max-w-sm py-4 rounded-2xl font-black text-white text-base">
+                        🚣 CHÈO GHE THEO NHỊP TRỐNG (SPACE / CHẠM)
+                    </button>
+                </div>
+            `;
+            const canvas = document.getElementById("c-duaghe");
+            const ctx = canvas.getContext("2d");
+
+            let pX = 75, ai1X = 75, ai2X = 75; // Chức năng: Tọa độ X của ghe người chơi và 2 ghe đối thủ
+            let pSpeed = 0, combo = 0, boostTimer = 0; // Chức năng: Vận tốc ghe, chuỗi nhịp chuẩn và thời gian Hò Dô Ta
+            let beatPhase = 0; // Chức năng: Vòng tròn nhịp trống thu nhỏ từ 1 về 0
+            let ended = false;
+
+            // Chức năng: Xử lý thao tác vung mái chèo khi người chơi bấm phím Space hoặc chạm nút
+            function paddleStroke() {
+                if (ended) return;
+                const diff = Math.abs(beatPhase - 0.5); // Chức năng: Đo độ lệch so với tâm nhịp trống
+                if (diff < 0.22) {
+                    combo++;
+                    folkAudio.playGood();
+                    if (combo >= 5) {
+                        boostTimer = 75;
+                        combo = 0;
+                        folkAudio.playDrum();
+                        showToast("🔥 HÒ DÔ TA! Ghe bứt tốc vượt sóng!", "success");
+                    }
+                    pSpeed = boostTimer > 0 ? 6.2 : 4.2;
+                } else {
+                    combo = 0;
+                    pSpeed = 1.4;
+                    folkAudio.playRimShot();
+                }
+            }
+
+            document.getElementById("btn-dg-paddle").addEventListener("pointerdown", (e) => { e.preventDefault(); paddleStroke(); });
+            const onKey = (e) => { if (e.code === "Space" && !e.repeat) { e.preventDefault(); paddleStroke(); } };
+            window.addEventListener("keydown", onKey);
+
+            const loop = setInterval(() => {
+                if (ended) return;
+                beatPhase = (beatPhase + 0.032) % 1; // Chức năng: Cập nhật nhịp trống liên tục
+                if (boostTimer > 0) boostTimer--;
+
+                pX += pSpeed;
+                pSpeed *= 0.93; // Chức năng: Lực cản dòng nước sông Hương
+                ai1X += 1.42 + Math.sin(pX * 0.03) * 0.35; // Chức năng: Tốc độ ghe AI đội Kim Long
+                ai2X += 1.35 + Math.cos(pX * 0.025) * 0.35; // Chức năng: Tốc độ ghe AI đội Vĩ Dạ
+
+                // Chức năng: Kiểm tra cán đích 725px
+                if (pX >= 725) {
+                    ended = true;
+                    finishMiniGame(true, "GHE RỒNG CÁN ĐÍCH ĐẦU TIÊN!", "Nhịp chèo đều tăm tắp vượt qua Cầu Trường Tiền!", 550);
+                    return;
+                }
+                if (ai1X >= 725 || ai2X >= 725) {
+                    ended = true;
+                    finishMiniGame(false, "ĐỘI BẠN ĐÃ VỀ ĐÍCH TRƯỚC!", "Hãy bấm đúng lúc vòng vàng khớp vào tâm trống để kích hoạt Hò Dô Ta nhé!");
+                    return;
+                }
+
+                // Chức năng: Vẽ khung cảnh Sông Hương & Cầu Trường Tiền
+                ctx.clearRect(0, 0, 800, 420);
+                ctx.fillStyle = "#1e3a8a";
+                ctx.fillRect(0, 0, 800, 125);
+
+                // Chức năng: Vẽ 6 nhịp cầu Trường Tiền màu trắng bạc
+                ctx.strokeStyle = "#e2e8f0";
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 6; i++) {
+                    ctx.beginPath();
+                    ctx.arc(110 + i * 115, 125, 52, Math.PI, 0);
+                    ctx.stroke();
+                }
+
+                // Chức năng: Vẽ mặt nước Sông Hương xanh biếc
+                ctx.fillStyle = "#0284c7";
+                ctx.fillRect(0, 125, 800, 295);
+
+                // Chức năng: Vẽ phao tiêu vạch đích
+                ctx.fillStyle = "#fde047";
+                ctx.fillRect(725, 125, 8, 295);
+
+                // Chức năng: Hàm vẽ từng chiếc ghe đua trên 3 làn nước
+                const drawBoat = (bx, by, color, label) => {
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(bx - 36, by);
+                    ctx.quadraticCurveTo(bx, by + 16, bx + 38, by);
+                    ctx.lineTo(bx + 26, by - 9);
+                    ctx.lineTo(bx - 26, by - 9);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.strokeStyle = "#fde047";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 11px Inter";
+                    ctx.textAlign = "center";
+                    ctx.fillText(label, bx, by - 16);
+                };
+
+                drawBoat(ai1X, 195, "#0d9488", "GHE KIM LONG");
+                drawBoat(pX, 275, boostTimer > 0 ? "#f59e0b" : "#dc2626", `${playerProfile.name} (${combo}/5)`);
+                drawBoat(ai2X, 355, "#7c3aed", "GHE VĨ DẠ");
+
+                // Chức năng: Vẽ vòng tròn chỉ báo nhịp trống ở góc trên phải
+                const ringR = 14 + Math.abs(beatPhase - 0.5) * 48;
+                ctx.strokeStyle = Math.abs(beatPhase - 0.5) < 0.22 ? "#22c55e" : "#fde047";
+                ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.arc(715, 62, ringR, 0, Math.PI * 2); ctx.stroke();
+                ctx.fillStyle = "#dc2626";
+                ctx.beginPath(); ctx.arc(715, 62, 14, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 10px Inter";
+                ctx.fillText("TRỐNG", 715, 66);
+            }, 25);
+
+            return () => { ended = true; clearInterval(loop); window.removeEventListener("keydown", onKey); };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 2: KÉO CO HỘI LÀNG (Căn nhịp kim vào vùng xanh & hỗ trợ 2P)
+        // ---------------------------------------------------------------------
+        function mountKeoCoGame(stage, isTwoP) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-3">
+                    <canvas id="c-keoco" width="800" height="410" class="w-full rounded-3xl border-2 border-amber-400 bg-amber-950 shadow-2xl"></canvas>
+                    <div class="w-full max-w-md grid ${isTwoP ? "grid-cols-2" : "grid-cols-1"} gap-3">
+                        <button id="btn-kc-p1" class="btn-hue-red py-4 rounded-2xl font-black text-white text-sm">
+                            💪 KÉO DÂY P1 (PHÍM A / CHẠM)
+                        </button>
+                        ${isTwoP ? `<button id="btn-kc-p2" class="btn-hue-jade py-4 rounded-2xl font-black text-white text-sm">💪 KÉO DÂY P2 (PHÍM L)</button>` : ""}
+                    </div>
+                </div>
+            `;
+            const canvas = document.getElementById("c-keoco");
+            const ctx = canvas.getContext("2d");
+
+            let ropeOffset = 0; // Chức năng: Độ lệch dải lụa đỏ (-180: P1 thắng, +180: P2 thắng)
+            let needle = 0, needleDir = 1; // Chức năng: Kim chạy trên thanh nhịp điệu
+            let ended = false;
+
+            function pullP1() {
+                if (ended) return;
+                const inSweetSpot = needle >= 35 && needle <= 65; // Chức năng: Vùng xanh giữa thanh lực
+                ropeOffset -= inSweetSpot ? 22 : 8;
+                if (inSweetSpot) folkAudio.playGood(); else folkAudio.playRimShot();
+            }
+
+            function pullP2() {
+                if (ended) return;
+                const inSweetSpot = needle >= 35 && needle <= 65;
+                ropeOffset += inSweetSpot ? 22 : 8;
+                if (inSweetSpot) folkAudio.playGood(); else folkAudio.playRimShot();
+            }
+
+            document.getElementById("btn-kc-p1").addEventListener("pointerdown", (e) => { e.preventDefault(); pullP1(); });
+            if (isTwoP) {
+                document.getElementById("btn-kc-p2").addEventListener("pointerdown", (e) => { e.preventDefault(); pullP2(); });
+            }
+
+            const onKey = (e) => {
+                if (e.repeat) return;
+                if (e.code === "KeyA" || (!isTwoP && e.code === "Space")) { e.preventDefault(); pullP1(); }
+                if (isTwoP && e.code === "KeyL") { e.preventDefault(); pullP2(); }
+            };
+            window.addEventListener("keydown", onKey);
+
+            const loop = setInterval(() => {
+                if (ended) return;
+                needle += needleDir * 3.4;
+                if (needle >= 100) { needle = 100; needleDir = -1; }
+                if (needle <= 0) { needle = 0; needleDir = 1; }
+
+                if (!isTwoP) ropeOffset += 0.92; // Chức năng: Lực kéo đều của đội làng bên nếu chơi 1P
+
+                if (ropeOffset <= -180) {
+                    ended = true;
+                    finishMiniGame(true, "KÉO CO THẮNG ÁP ĐẢO!", "Dải lụa đỏ đã vượt qua vạch vôi trắng sân đình!", 550);
+                    return;
+                }
+                if (ropeOffset >= 180) {
+                    ended = true;
+                    finishMiniGame(false, isTwoP ? `${playerProfile.p2Name} KÉO THẮNG!` : "ĐỘI LÀNG BÊN KÉO THẮNG!", "Hãy bấm đúng lúc kim chạy vào vùng xanh lá để dồn sức mạnh tối đa nhé!");
+                    return;
+                }
+
+                ctx.clearRect(0, 0, 800, 410);
+                ctx.fillStyle = "#451a03";
+                ctx.fillRect(0, 0, 800, 250);
+                ctx.fillStyle = "#78350f";
+                ctx.fillRect(0, 250, 800, 160);
+
+                // Chức năng: Vạch vôi trắng ở giữa sân đình
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 4;
+                ctx.setLineDash([8, 6]);
+                ctx.beginPath(); ctx.moveTo(400, 240); ctx.lineTo(400, 400); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Chức năng: Sợi dây thừng & Dải lụa đỏ ở tâm
+                const center = 400 + ropeOffset;
+                ctx.strokeStyle = "#eab308";
+                ctx.lineWidth = 8;
+                ctx.beginPath(); ctx.moveTo(center - 260, 295); ctx.lineTo(center + 260, 295); ctx.stroke();
+
+                ctx.fillStyle = "#dc2626";
+                ctx.beginPath(); ctx.moveTo(center, 295); ctx.lineTo(center - 10, 326); ctx.lineTo(center + 10, 326); ctx.closePath(); ctx.fill();
+
+                // Chức năng: Vẽ 2 đội kéo co hai bên
+                [-170, -120].forEach(dx => {
+                    ctx.fillStyle = "#38bdf8";
+                    ctx.beginPath(); ctx.arc(center + dx, 265, 13, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillRect(center + dx - 10, 280, 20, 45);
+                });
+                [120, 170].forEach(dx => {
+                    ctx.fillStyle = "#f43f5e";
+                    ctx.beginPath(); ctx.arc(center + dx, 265, 13, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillRect(center + dx - 10, 280, 20, 45);
+                });
+
+                // Chức năng: Thanh nhịp điệu trống hội phía trên
+                ctx.fillStyle = "#1c1917";
+                ctx.fillRect(250, 55, 300, 22);
+                ctx.fillStyle = "#10b981";
+                ctx.fillRect(250 + 300 * 0.35, 55, 300 * 0.30, 22);
+                ctx.fillStyle = "#fde047";
+                ctx.fillRect(250 + (needle / 100) * 300 - 3, 50, 6, 32);
+
+                ctx.fillStyle = "#fef3c7";
+                ctx.font = "bold 13px Inter";
+                ctx.textAlign = "center";
+                ctx.fillText("BẤM KÉO KHI KIM VÀO VÙNG XANH LÁ!", 400, 38);
+            }, 25);
+
+            return () => { ended = true; clearInterval(loop); window.removeEventListener("keydown", onKey); };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 3: ĐẤU VẬT LÀNG SÌNH (ĐỐI KHÁNG 2D KIỂU STREET FIGHTER)
+        // ---------------------------------------------------------------------
+        function mountDauVatGame(stage, isTwoP) {
+            const p1DisplayName = playerProfile.name || "ĐÔ VẬT KHỐ ĐỎ";
+            const p2DisplayName = isTwoP ? (playerProfile.p2Name || "ĐÔ VẬT KHỐ XANH") : (homeState.slots[1] && !homeState.slots[1].isEmpty ? homeState.slots[1].name : "CAO THỦ LÀNG SÌNH");
+
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-2.5">
+                    <canvas id="c-dauvat" width="800" height="430" class="w-full rounded-3xl border-2 border-amber-400 bg-stone-950 shadow-2xl"></canvas>
+
+                    <!-- Bảng nút điều khiển hành động cho cả PC và điện thoại -->
+                    <div class="w-full grid grid-cols-2 sm:grid-cols-6 gap-2">
+                        <button id="sf-btn-left" class="py-2.5 rounded-xl bg-stone-800 active:bg-stone-700 border border-amber-400/40 font-black text-xs text-amber-200">
+                            ⬅ LÙI (A)
+                        </button>
+                        <button id="sf-btn-right" class="py-2.5 rounded-xl bg-stone-800 active:bg-stone-700 border border-amber-400/40 font-black text-xs text-amber-200">
+                            TIẾN (D) ➡
+                        </button>
+                        <button id="sf-btn-jump" class="py-2.5 rounded-xl bg-stone-800 active:bg-stone-700 border border-amber-400/40 font-black text-xs text-amber-200">
+                            ⬆ NHẢY (W)
+                        </button>
+                        <button id="sf-btn-punch" class="btn-hue-red py-2.5 rounded-xl font-black text-xs text-white">
+                            👊 ĐẤM / ĐẨY (J)
+                        </button>
+                        <button id="sf-btn-kick" class="btn-hue-jade py-2.5 rounded-xl font-black text-xs text-white">
+                            🦵 ĐÁ / GẠT (K)
+                        </button>
+                        <button id="sf-btn-super" class="btn-hue-gold py-2.5 rounded-xl font-black text-xs">
+                            🔥 VẬT NGÃ (SPACE)
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-amber-200/80 text-center">
+                        ${isTwoP
+                    ? "P1: A/D di chuyển, W nhảy, J đấm, K đá, L đỡ, Space tuyệt chiêu • P2: Mũi tên di chuyển, 1 đấm, 2 đá, 3 đỡ, Enter tuyệt chiêu"
+                    : "P1: A/D di chuyển, W nhảy, J (hoặc Z) đấm đẩy, K (hoặc X) đá gạt, L (hoặc C) đỡ đòn, Space (hoặc V) tung Tuyệt Chiêu khi đầy Nộ!"}
+                    </p>
+                </div>
+            `;
+
+            const canvas = document.getElementById("c-dauvat");
+            const ctx = canvas.getContext("2d");
+
+            const GROUND_Y = 365; // Chức năng: Tọa độ mặt đất sới vật Làng Sình
+            const keys = {}; // Chức năng: Lưu trạng thái các phím đang được giữ
+            let timerSec = 99; // Chức năng: Đồng hồ đếm ngược 99 giây chuẩn Street Fighter
+            let frameTick = 0; // Chức năng: Bộ đếm khung hình
+            let shakeFrames = 0; // Chức năng: Số khung hình rung lắc camera khi trúng đòn mạnh
+            let flashFrames = 0; // Chức năng: Số khung hình chớp sáng khi tung tuyệt chiêu
+            let bannerAlert = { text: "SẴN SÀNG... GIAO ĐẤU!", timer: 65 };
+            let particles = []; // Chức năng: Danh sách hạt tia lửa va chạm
+            let ended = false;
+
+            // Chức năng: Hàm khởi tạo dữ liệu cho mỗi võ sĩ đô vật
+            function createFighter(opts) {
+                return {
+                    name: opts.name,
+                    x: opts.x,
+                    y: GROUND_Y,
+                    vx: 0,
+                    vy: 0,
+                    facing: opts.facing,
+                    hp: 100,
+                    maxHp: 100,
+                    rage: 35,
+                    colorBelt: opts.colorBelt,
+                    colorBand: opts.colorBand,
+                    state: "IDLE",
+                    stateTimer: 0,
+                    hitRegistered: false,
+                    aiCooldown: 20
+                };
+            }
+
+            const p1 = createFighter({ name: p1DisplayName, x: 230, facing: 1, colorBelt: "#dc2626", colorBand: "#fde047" });
+            const p2 = createFighter({ name: p2DisplayName, x: 570, facing: -1, colorBelt: "#2563eb", colorBand: "#5eead4" });
+
+            // Chức năng: Tạo hiệu ứng tia lửa bắn ra tại điểm trúng đòn
+            function spawnSparks(x, y, color, count = 14) {
+                for (let i = 0; i < count; i++) {
+                    const ang = Math.random() * Math.PI * 2;
+                    const spd = 2 + Math.random() * 6;
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(ang) * spd,
+                        vy: Math.sin(ang) * spd - 1.5,
+                        life: 18 + Math.random() * 10,
+                        color
+                    });
+                }
+            }
+
+            // Chức năng: Thực hiện đòn đánh (Đấm, Đá hoặc Tuyệt chiêu Vật Ngã)
+            function triggerAttack(attacker, moveType) {
+                if (ended) return;
+                if (["PUNCH", "KICK", "SUPER", "HURT", "KO"].includes(attacker.state)) return;
+
+                if (moveType === "SUPER") {
+                    if (attacker.rage < 100) {
+                        if (attacker === p1) showToast("Chưa đủ 100% Nộ Sới Vật Trigger!", "info");
+                        return;
+                    }
+                    attacker.rage = 0;
+                    attacker.state = "SUPER";
+                    attacker.stateTimer = 26;
+                    attacker.vx = attacker.facing * 9.5;
+                    attacker.hitRegistered = false;
+                    flashFrames = 8;
+                    folkAudio.playDrum();
+                    bannerAlert = { text: "⚡ TUYỆT CHIÊU: HÚC SẤM SÉT!", timer: 45 };
+                    return;
+                }
+
+                attacker.state = moveType;
+                attacker.stateTimer = moveType === "PUNCH" ? 14 : 18;
+                attacker.hitRegistered = false;
+                folkAudio.playRimShot();
+            }
+
+            const onKeyDown = (e) => {
+                keys[e.code] = true;
+                if (ended) return;
+                if (!e.repeat) {
+                    if (e.code === "KeyJ" || e.code === "KeyZ") triggerAttack(p1, "PUNCH");
+                    if (e.code === "KeyK" || e.code === "KeyX") triggerAttack(p1, "KICK");
+                    if (e.code === "Space" || e.code === "KeyV") { e.preventDefault(); triggerAttack(p1, "SUPER"); }
+                    if (e.code === "KeyW" && p1.y >= GROUND_Y) { p1.vy = -14.5; p1.state = "JUMP"; }
+                }
+                if (isTwoP && !e.repeat) {
+                    if (e.code === "Digit1" || e.code === "Numpad1") triggerAttack(p2, "PUNCH");
+                    if (e.code === "Digit2" || e.code === "Numpad2") triggerAttack(p2, "KICK");
+                    if (e.code === "Enter" || e.code === "NumpadEnter") { e.preventDefault(); triggerAttack(p2, "SUPER"); }
+                    if (e.code === "ArrowUp" && p2.y >= GROUND_Y) { p2.vy = -14.5; p2.state = "JUMP"; }
+                }
+            };
+
+            const onKeyUp = (e) => { keys[e.code] = false; };
+            window.addEventListener("keydown", onKeyDown);
+            window.addEventListener("keyup", onKeyUp);
+
+            const bindHoldBtn = (id, code) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener("pointerdown", (e) => { e.preventDefault(); keys[code] = true; });
+                el.addEventListener("pointerup", () => { keys[code] = false; });
+                el.addEventListener("pointerleave", () => { keys[code] = false; });
+            };
+            bindHoldBtn("sf-btn-left", "KeyA");
+            bindHoldBtn("sf-btn-right", "KeyD");
+
+            const jumpBtn = document.getElementById("sf-btn-jump");
+            if (jumpBtn) jumpBtn.addEventListener("pointerdown", (e) => {
+                e.preventDefault();
+                if (p1.y >= GROUND_Y && !ended) { p1.vy = -14.5; p1.state = "JUMP"; }
+            });
+            const punchBtn = document.getElementById("sf-btn-punch");
+            if (punchBtn) punchBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); triggerAttack(p1, "PUNCH"); });
+            const kickBtn = document.getElementById("sf-btn-kick");
+            if (kickBtn) kickBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); triggerAttack(p1, "KICK"); });
+            const superBtn = document.getElementById("sf-btn-super");
+            if (superBtn) superBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); triggerAttack(p1, "SUPER"); });
+
+            // Chức năng: Cập nhật vật lý di chuyển, trọng lực, AI và va chạm đòn đánh
+            function updateFighterPhysics(f, opponent, isP1) {
+                if (f.state === "KO") return;
+
+                if (!["PUNCH", "KICK", "SUPER", "HURT"].includes(f.state)) {
+                    f.facing = opponent.x >= f.x ? 1 : -1;
+                }
+
+                if (f.stateTimer > 0) {
+                    f.stateTimer--;
+                    if (f.stateTimer === 0) {
+                        f.state = f.y < GROUND_Y ? "JUMP" : "IDLE";
+                        f.vx = 0;
+                    }
+                }
+
+                if (!["PUNCH", "KICK", "SUPER", "HURT"].includes(f.state)) {
+                    if (isP1) {
+                        const blocking = keys["KeyL"] || keys["KeyC"];
+                        if (blocking && f.y >= GROUND_Y) {
+                            f.state = "BLOCK";
+                            f.vx = 0;
+                        } else {
+                            if (f.state === "BLOCK") f.state = "IDLE";
+                            if (keys["KeyA"]) { f.vx = -4.6; if (f.y >= GROUND_Y) f.state = "WALK"; }
+                            else if (keys["KeyD"]) { f.vx = 4.6; if (f.y >= GROUND_Y) f.state = "WALK"; }
+                            else { f.vx = 0; if (f.y >= GROUND_Y) f.state = "IDLE"; }
+                        }
+                    } else if (isTwoP) {
+                        const blocking2 = keys["Digit3"] || keys["Numpad3"];
+                        if (blocking2 && f.y >= GROUND_Y) {
+                            f.state = "BLOCK";
+                            f.vx = 0;
+                        } else {
+                            if (f.state === "BLOCK") f.state = "IDLE";
+                            if (keys["ArrowLeft"]) { f.vx = -4.6; if (f.y >= GROUND_Y) f.state = "WALK"; }
+                            else if (keys["ArrowRight"]) { f.vx = 4.6; if (f.y >= GROUND_Y) f.state = "WALK"; }
+                            else { f.vx = 0; if (f.y >= GROUND_Y) f.state = "IDLE"; }
+                        }
+                    } else {
+                        const dist = Math.abs(opponent.x - f.x);
+                        if (f.aiCooldown > 0) f.aiCooldown--;
+
+                        if (["PUNCH", "KICK", "SUPER"].includes(opponent.state) && dist < 130 && Math.random() < 0.08) {
+                            f.state = "BLOCK";
+                            f.vx = 0;
+                        } else if (dist > 95) {
+                            f.vx = f.facing * 3.4;
+                            if (f.y >= GROUND_Y) f.state = "WALK";
+                        } else {
+                            f.vx = 0;
+                            if (f.y >= GROUND_Y && f.state !== "BLOCK") f.state = "IDLE";
+                            if (f.aiCooldown <= 0) {
+                                f.aiCooldown = 26 + Math.floor(Math.random() * 22);
+                                if (f.rage >= 100) triggerAttack(f, "SUPER");
+                                else triggerAttack(f, Math.random() < 0.55 ? "PUNCH" : "KICK");
+                            }
+                        }
+                    }
+                }
+
+                f.x += f.vx;
+                if (f.y < GROUND_Y || f.vy !== 0) {
+                    f.y += f.vy;
+                    f.vy += 0.85;
+                    if (f.y >= GROUND_Y) {
+                        f.y = GROUND_Y;
+                        f.vy = 0;
+                        if (f.state === "JUMP") f.state = "IDLE";
+                    }
+                }
+
+                f.x = Math.max(85, Math.min(715, f.x));
+
+                if (["PUNCH", "KICK", "SUPER"].includes(f.state) && !f.hitRegistered) {
+                    const reach = f.state === "SUPER" ? 130 : f.state === "KICK" ? 102 : 84;
+                    const dx = (opponent.x - f.x) * f.facing;
+                    const dy = Math.abs(opponent.y - f.y);
+
+                    if (dx > -15 && dx <= reach && dy < 75) {
+                        f.hitRegistered = true;
+                        const isBlocked = opponent.state === "BLOCK";
+                        let dmg = f.state === "SUPER" ? 28 : f.state === "KICK" ? 13 : 9;
+                        if (isBlocked) dmg = Math.max(2, Math.floor(dmg * 0.25));
+
+                        opponent.hp = Math.max(0, opponent.hp - dmg);
+                        f.rage = Math.min(100, f.rage + (f.state === "SUPER" ? 0 : 18));
+                        opponent.rage = Math.min(100, opponent.rage + 12);
+
+                        opponent.x = Math.max(85, Math.min(715, opponent.x + f.facing * (f.state === "SUPER" ? 58 : 22)));
+                        if (!isBlocked) {
+                            opponent.state = "HURT";
+                            opponent.stateTimer = 11;
+                            folkAudio.playDrum();
+                            shakeFrames = f.state === "SUPER" ? 14 : 6;
+                            spawnSparks(opponent.x, opponent.y - 68, f.state === "SUPER" ? "#fde047" : "#ef4444", f.state === "SUPER" ? 24 : 12);
+                        } else {
+                            folkAudio.playRimShot();
+                            spawnSparks(opponent.x, opponent.y - 68, "#38bdf8", 8);
+                        }
+                    }
+                }
+            }
+
+            // Chức năng: Vẽ thanh máu HP đối xứng, đồng hồ 99s và thanh Nộ Sới Vật
+            function drawStreetFighterHud() {
+                ctx.fillStyle = "rgba(12, 10, 9, 0.85)";
+                ctx.fillRect(0, 0, 800, 78);
+
+                ctx.fillStyle = "#7f1d1d";
+                ctx.fillRect(16, 12, 52, 52);
+                ctx.strokeStyle = "#f59e0b";
+                ctx.lineWidth = 2.5;
+                ctx.strokeRect(16, 12, 52, 52);
+                ctx.fillStyle = "#fed7aa";
+                ctx.beginPath(); ctx.arc(42, 36, 15, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#dc2626";
+                ctx.fillRect(27, 26, 30, 6);
+
+                ctx.fillStyle = "#292524";
+                ctx.fillRect(76, 22, 275, 22);
+                const p1HpW = 275 * (p1.hp / p1.maxHp);
+                ctx.fillStyle = p1.hp > 30 ? "#22c55e" : "#ef4444";
+                ctx.fillRect(76 + (275 - p1HpW), 22, p1HpW, 22);
+                ctx.strokeStyle = "#fbbf24";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(76, 22, 275, 22);
+
+                ctx.fillStyle = "#fef3c7";
+                ctx.font = "900 12px Inter";
+                ctx.textAlign = "left";
+                ctx.fillText(p1.name, 78, 60);
+
+                ctx.fillStyle = "#451a03";
+                ctx.beginPath(); ctx.arc(400, 38, 28, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = "#f59e0b";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = "#fde047";
+                ctx.font = "900 22px Inter";
+                ctx.textAlign = "center";
+                ctx.fillText(String(Math.ceil(timerSec)).padStart(2, "0"), 400, 46);
+
+                ctx.fillStyle = "#1e3a8a";
+                ctx.fillRect(732, 12, 52, 52);
+                ctx.strokeStyle = "#f59e0b";
+                ctx.lineWidth = 2.5;
+                ctx.strokeRect(732, 12, 52, 52);
+                ctx.fillStyle = "#fed7aa";
+                ctx.beginPath(); ctx.arc(758, 36, 15, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#38bdf8";
+                ctx.fillRect(743, 26, 30, 6);
+
+                ctx.fillStyle = "#292524";
+                ctx.fillRect(449, 22, 275, 22);
+                const p2HpW = 275 * (p2.hp / p2.maxHp);
+                ctx.fillStyle = p2.hp > 30 ? "#22c55e" : "#ef4444";
+                ctx.fillRect(449, 22, p2HpW, 22);
+                ctx.strokeStyle = "#fbbf24";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(449, 22, 275, 22);
+
+                ctx.fillStyle = "#fef3c7";
+                ctx.font = "900 12px Inter";
+                ctx.textAlign = "right";
+                ctx.fillText(p2.name, 722, 60);
+
+                ctx.fillStyle = "rgba(0,0,0,0.75)";
+                ctx.fillRect(20, 396, 220, 18);
+                ctx.fillStyle = p1.rage >= 100 ? "#f59e0b" : "#0ea5e9";
+                ctx.fillRect(20, 396, 220 * (p1.rage / 100), 18);
+                ctx.strokeStyle = "#fbbf24";
+                ctx.strokeRect(20, 396, 220, 18);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 10px Inter";
+                ctx.textAlign = "left";
+                ctx.fillText(p1.rage >= 100 ? "🔥 NỘ ĐẦY 100% (BẤM SPACE!)" : `NỘ SỚI VẬT: ${p1.rage}%`, 26, 409);
+
+                ctx.fillStyle = "rgba(0,0,0,0.75)";
+                ctx.fillRect(560, 396, 220, 18);
+                ctx.fillStyle = p2.rage >= 100 ? "#f59e0b" : "#0ea5e9";
+                ctx.fillRect(560 + 220 * (1 - p2.rage / 100), 396, 220 * (p2.rage / 100), 18);
+                ctx.strokeStyle = "#fbbf24";
+                ctx.strokeRect(560, 396, 220, 18);
+                ctx.fillStyle = "#ffffff";
+                ctx.textAlign = "right";
+                ctx.fillText(`NỘ ĐỐI THỦ: ${p2.rage}%`, 774, 409);
+            }
+
+            // Chức năng: Vẽ tạo hình đô vật Làng Sình đóng khố truyền thống cùng các tư thế võ thuật
+            function drawWrestler(f) {
+                ctx.save();
+                ctx.translate(f.x, f.y);
+
+                ctx.fillStyle = "rgba(0,0,0,0.38)";
+                ctx.beginPath(); ctx.ellipse(0, 4, 34, 9, 0, 0, Math.PI * 2); ctx.fill();
+
+                if (f.state === "KO") {
+                    ctx.rotate(-f.facing * Math.PI / 2);
+                    ctx.translate(0, -18);
+                }
+
+                ctx.scale(f.facing, 1);
+
+                if (f.rage >= 100 || f.state === "SUPER") {
+                    ctx.shadowColor = "#fbbf24";
+                    ctx.shadowBlur = 20;
+                }
+
+                const bob = f.state === "IDLE" ? Math.sin(frameTick * 0.2) * 2.5 : 0;
+
+                ctx.strokeStyle = "#f59e0b";
+                ctx.lineWidth = 11;
+                ctx.lineCap = "round";
+                ctx.beginPath();
+                ctx.moveTo(-10, -42 + bob);
+                ctx.lineTo(-22, 0);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(10, -42 + bob);
+                if (f.state === "KICK") {
+                    ctx.lineTo(66, -34);
+                } else {
+                    ctx.lineTo(22, 0);
+                }
+                ctx.stroke();
+
+                ctx.fillStyle = f.state === "HURT" ? "#fca5a5" : "#fed7aa";
+                ctx.beginPath();
+                ctx.roundRect(-22, -96 + bob, 44, 54, 12);
+                ctx.fill();
+
+                ctx.fillStyle = f.colorBelt;
+                ctx.fillRect(-22, -56 + bob, 44, 18);
+                ctx.fillStyle = f.colorBand;
+                ctx.fillRect(-4, -56 + bob, 8, 26);
+
+                ctx.fillStyle = "#fed7aa";
+                ctx.beginPath();
+                ctx.arc(2, -114 + bob, 17, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = f.colorBelt;
+                ctx.fillRect(-15, -124 + bob, 34, 7);
+
+                ctx.strokeStyle = "#fed7aa";
+                ctx.lineWidth = 10;
+                if (f.state === "BLOCK") {
+                    ctx.beginPath();
+                    ctx.moveTo(14, -84 + bob);
+                    ctx.lineTo(24, -112 + bob);
+                    ctx.stroke();
+                    ctx.strokeStyle = "#38bdf8";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.arc(26, -88 + bob, 26, -0.8, 0.8); ctx.stroke();
+                } else if (f.state === "PUNCH" || f.state === "SUPER") {
+                    ctx.beginPath();
+                    ctx.moveTo(14, -84 + bob);
+                    ctx.lineTo(f.state === "SUPER" ? 78 : 58, -84 + bob);
+                    ctx.stroke();
+                    ctx.fillStyle = f.colorBelt;
+                    ctx.beginPath(); ctx.arc(f.state === "SUPER" ? 80 : 60, -84 + bob, 9, 0, Math.PI * 2); ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(12, -84 + bob);
+                    ctx.lineTo(32, -72 + bob);
+                    ctx.lineTo(28, -92 + bob);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+
+            const loop = setInterval(() => {
+                if (ended) return;
+                frameTick++;
+                if (frameTick % 33 === 0 && timerSec > 0) timerSec--;
+                if (shakeFrames > 0) shakeFrames--;
+                if (flashFrames > 0) flashFrames--;
+                if (bannerAlert.timer > 0) bannerAlert.timer--;
+
+                updateFighterPhysics(p1, p2, true);
+                updateFighterPhysics(p2, p1, false);
+
+                particles.forEach(pt => { pt.x += pt.vx; pt.y += pt.vy; pt.life--; });
+                particles = particles.filter(pt => pt.life > 0);
+
+                if (p1.hp <= 0 || p2.hp <= 0 || timerSec <= 0) {
+                    ended = true;
+                    const p1Won = p2.hp <= 0 || (timerSec <= 0 && p1.hp >= p2.hp);
+                    if (p1Won) p2.state = "KO";
+                    else p1.state = "KO";
+
+                    setTimeout(() => {
+                        if (p1Won) {
+                            finishMiniGame(true, "K.O! LẤM LƯNG TRẮNG BỤNG!", `${p1.name} đã hạ đo ván đối thủ trên sới vật Làng Sình!`, 700);
+                        } else {
+                            finishMiniGame(false, isTwoP ? `${p2.name} HẠ K.O!` : "BỊ QUẬT NGÃ TRÊN SỚI VẬT!", "Hãy kết hợp Đỡ đòn (L) và tung Tuyệt Chiêu Vật Ngã (Space) khi đầy Nộ nhé!");
+                        }
+                    }, 750);
+                }
+
+                ctx.save();
+                if (shakeFrames > 0) {
+                    ctx.translate((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
+                }
+
+                const bgGrad = ctx.createLinearGradient(0, 78, 0, 320);
+                bgGrad.addColorStop(0, "#451a03");
+                bgGrad.addColorStop(0.55, "#9a3412");
+                bgGrad.addColorStop(1, "#d97706");
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 78, 800, 250);
+
+                ctx.fillStyle = "rgba(69, 10, 10, 0.55)";
+                ctx.beginPath();
+                ctx.moveTo(0, 310); ctx.lineTo(180, 180); ctx.lineTo(390, 260); ctx.lineTo(610, 165); ctx.lineTo(800, 290); ctx.lineTo(800, 310);
+                ctx.closePath();
+                ctx.fill();
+
+                const flagColors = ["#ef4444", "#eab308", "#22c55e", "#3b82f6", "#f8fafc"];
+                for (let i = 0; i < 5; i++) {
+                    ctx.fillStyle = flagColors[i];
+                    ctx.fillRect(65 + i * 24, 110, 16, 26);
+                    ctx.fillRect(615 + i * 24, 110, 16, 26);
+                }
+
+                ctx.fillStyle = "#78350f";
+                ctx.fillRect(0, 310, 800, 120);
+                ctx.fillStyle = "#d97706";
+                ctx.beginPath(); ctx.ellipse(400, 365, 345, 42, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = "#fef3c7";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                drawWrestler(p1);
+                drawWrestler(p2);
+
+                particles.forEach(pt => {
+                    ctx.fillStyle = pt.color;
+                    ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2); ctx.fill();
+                });
+
+                if (flashFrames > 0) {
+                    ctx.fillStyle = "rgba(254, 240, 138, 0.32)";
+                    ctx.fillRect(0, 78, 800, 352);
+                }
+
+                drawStreetFighterHud();
+
+                if (bannerAlert.timer > 0 || p1.hp <= 0 || p2.hp <= 0) {
+                    const label = (p1.hp <= 0 || p2.hp <= 0) ? "K.O! LẤM LƯNG TRẮNG BỤNG!" : bannerAlert.text;
+                    ctx.fillStyle = "rgba(0,0,0,0.6)";
+                    ctx.fillRect(150, 145, 500, 52);
+                    ctx.strokeStyle = "#f59e0b";
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(150, 145, 500, 52);
+                    ctx.fillStyle = "#fde047";
+                    ctx.font = "900 22px Inter";
+                    ctx.textAlign = "center";
+                    ctx.fillText(label, 400, 179);
+                }
+
+                ctx.restore();
+            }, 30);
+
+            return () => {
+                ended = true;
+                clearInterval(loop);
+                window.removeEventListener("keydown", onKeyDown);
+                window.removeEventListener("keyup", onKeyUp);
+            };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 4: NHẢY DÂY SÂN ĐÌNH (Mục tiêu vượt 12 vòng dây)
+        // ---------------------------------------------------------------------
+        function mountNhayDayGame(stage) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-3">
+                    <canvas id="c-nhayday" width="800" height="420" class="w-full rounded-3xl border-2 border-amber-400 bg-red-950 shadow-2xl"></canvas>
+                    <button id="btn-nd-jump" class="btn-hue-gold w-full max-w-sm py-4 rounded-2xl font-black text-base">
+                        🦘 BẬT NHẢY QUA DÂY (SPACE / CHẠM)
+                    </button>
+                </div>
+            `;
+            const canvas = document.getElementById("c-nhayday");
+            const ctx = canvas.getContext("2d");
+
+            let angle = Math.PI;
+            let speed = 0.065;
+            let py = 0, vy = 0;
+            let jumpsCleared = 0;
+            let scoredThisTurn = false;
+            let ended = false;
+
+            function jump() {
+                if (py === 0 && !ended) {
+                    vy = 13.5;
+                    folkAudio.playRimShot();
+                }
+            }
+            document.getElementById("btn-nd-jump").addEventListener("pointerdown", (e) => { e.preventDefault(); jump(); });
+            const onKey = (e) => { if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); jump(); } };
+            window.addEventListener("keydown", onKey);
+
+            const loop = setInterval(() => {
+                if (ended) return;
+                angle += speed;
+                if (angle >= Math.PI * 2) {
+                    angle -= Math.PI * 2;
+                    scoredThisTurn = false;
+                }
+
+                if (py > 0 || vy > 0) {
+                    py += vy;
+                    vy -= 0.85;
+                    if (py <= 0) { py = 0; vy = 0; }
+                }
+
+                const ropeY = 230 + Math.sin(angle) * 115;
+                if (ropeY > 332) {
+                    if (py < 24) {
+                        ended = true;
+                        finishMiniGame(false, `VƯỚNG DÂY Ở VÒNG ${jumpsCleared + 1}!`, "Hãy nhìn bóng dây sát mặt gạch đỏ để bật nhảy kịp lúc nhé!");
+                        return;
+                    } else if (!scoredThisTurn) {
+                        scoredThisTurn = true;
+                        jumpsCleared++;
+                        folkAudio.playGood();
+                        if (jumpsCleared % 4 === 0) speed += 0.012;
+                        if (jumpsCleared >= 12) {
+                            ended = true;
+                            finishMiniGame(true, "XUẤT SẮC VƯỢT 12 VÒNG DÂY!", "Đôi chân thoăn thoắt như chim én trên sân đình xứ Huế!", 500);
+                            return;
+                        }
+                    }
+                }
+
+                ctx.clearRect(0, 0, 800, 420);
+                ctx.fillStyle = "#450a0a";
+                ctx.fillRect(0, 0, 800, 345);
+                ctx.fillStyle = "#991b1b";
+                ctx.fillRect(0, 345, 800, 75);
+
+                [170, 630].forEach(hx => {
+                    ctx.fillStyle = "#0d9488";
+                    ctx.fillRect(hx - 12, 260, 24, 85);
+                    ctx.fillStyle = "#fed7aa";
+                    ctx.beginPath(); ctx.arc(hx, 245, 13, 0, Math.PI * 2); ctx.fill();
+                });
+
+                if (Math.cos(angle) < 0) {
+                    ctx.strokeStyle = "#fde047";
+                    ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.moveTo(170, 285); ctx.quadraticCurveTo(400, ropeY, 630, 285); ctx.stroke();
+                }
+
+                const charY = 345 - py;
+                ctx.fillStyle = "#f59e0b";
+                ctx.fillRect(386, charY - 62, 28, 62);
+                ctx.fillStyle = "#fed7aa";
+                ctx.beginPath(); ctx.arc(400, charY - 76, 14, 0, Math.PI * 2); ctx.fill();
+
+                if (Math.cos(angle) >= 0) {
+                    ctx.strokeStyle = "#fde047";
+                    ctx.lineWidth = 5;
+                    ctx.beginPath(); ctx.moveTo(170, 285); ctx.quadraticCurveTo(400, ropeY, 630, 285); ctx.stroke();
+                }
+
+                ctx.fillStyle = "#fde047";
+                ctx.font = "900 18px Inter";
+                ctx.textAlign = "center";
+                ctx.fillText(`SỐ VÒNG NHẢY THÀNH CÔNG: ${jumpsCleared} / 12`, 400, 42);
+            }, 25);
+
+            return () => { ended = true; clearInterval(loop); window.removeEventListener("keydown", onKey); };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 5: NHẢY BAO BỐ (Giữ nạp lực parabol & thả nhảy né vũng bùn)
+        // ---------------------------------------------------------------------
+        function mountNhayBaoBoGame(stage) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-3">
+                    <canvas id="c-baobo" width="800" height="400" class="w-full rounded-3xl border-2 border-amber-400 bg-emerald-950 shadow-2xl"></canvas>
+                    <button id="btn-bb-hold" class="btn-hue-red w-full max-w-sm py-4 rounded-2xl font-black text-white text-base">
+                        🎒 NHẤN GIỮ NẠP LỰC & THẢ NHẢY (SPACE / CHUỘT)
+                    </button>
+                </div>
+            `;
+            const canvas = document.getElementById("c-baobo");
+            const ctx = canvas.getContext("2d");
+
+            let px = 70, py = 0, vx = 0, vy = 0;
+            let charging = false, power = 0, stun = 0;
+            let aiX = 70;
+            const mudPits = [240, 430, 610];
+            let ended = false;
+
+            const startCharge = (e) => { if (e) e.preventDefault(); if (py === 0 && stun === 0 && !ended) charging = true; };
+            const releaseJump = (e) => {
+                if (e) e.preventDefault();
+                if (!charging || ended) return;
+                charging = false;
+                vx = 3.5 + power * 0.065;
+                vy = 8 + power * 0.085;
+                power = 0;
+                folkAudio.playRimShot();
+            };
+
+            const btn = document.getElementById("btn-bb-hold");
+            btn.addEventListener("pointerdown", startCharge);
+            window.addEventListener("pointerup", releaseJump);
+            const onKeyDown = (e) => { if (e.code === "Space" && !e.repeat) startCharge(e); };
+            const onKeyUp = (e) => { if (e.code === "Space") releaseJump(e); };
+            window.addEventListener("keydown", onKeyDown);
+            window.addEventListener("keyup", onKeyUp);
+
+            const loop = setInterval(() => {
+                if (ended) return;
+                if (charging) power = Math.min(100, power + 2.8);
+                if (stun > 0) stun--;
+
+                if (py > 0 || vy > 0) {
+                    px += vx;
+                    py += vy;
+                    vy -= 0.65;
+                    if (py <= 0) {
+                        py = 0; vx = 0; vy = 0;
+                        if (mudPits.some(mx => Math.abs(px - mx) < 28)) {
+                            stun = 35;
+                            folkAudio.playFail();
+                            showToast("Úi chà! Nhảy trúng vũng bùn rồi!", "info");
+                        }
+                    }
+                }
+
+                aiX += 1.55;
+                if (px >= 735) {
+                    ended = true;
+                    finishMiniGame(true, "NHẢY BAO BỐ VỀ NHẤT!", "Những cú bật nhảy chuẩn xác đưa bạn cán đích đầu tiên!", 550);
+                    return;
+                }
+                if (aiX >= 735) {
+                    ended = true;
+                    finishMiniGame(false, "ĐỐI THỦ VỀ ĐÍCH TRƯỚC!", "Hãy căn lực nhảy qua các vũng bùn nâu nhé!");
+                    return;
+                }
+
+                ctx.clearRect(0, 0, 800, 400);
+                ctx.fillStyle = "#064e3b";
+                ctx.fillRect(0, 0, 800, 260);
+                ctx.fillStyle = "#78350f";
+                ctx.fillRect(0, 260, 800, 140);
+
+                ctx.fillStyle = "#fde047";
+                ctx.fillRect(735, 220, 8, 175);
+
+                mudPits.forEach(mx => {
+                    ctx.fillStyle = "#451a03";
+                    ctx.beginPath(); ctx.ellipse(mx, 315, 28, 8, 0, 0, Math.PI * 2); ctx.fill();
+                });
+
+                if (charging) {
+                    const pvx = 3.5 + power * 0.065;
+                    const pvy = 8 + power * 0.085;
+                    ctx.fillStyle = "#fde047";
+                    for (let t = 2; t <= 24; t += 3) {
+                        const tx = px + pvx * t;
+                        const ty = 310 - (pvy * t - 0.5 * 0.65 * t * t);
+                        ctx.beginPath(); ctx.arc(tx, ty, 3, 0, Math.PI * 2); ctx.fill();
+                    }
+                }
+
+                const drawY = 310 - py;
+                ctx.fillStyle = stun > 0 ? "#ef4444" : "#f59e0b";
+                ctx.fillRect(px - 14, drawY - 38, 28, 38);
+                ctx.fillStyle = "#fed7aa";
+                ctx.beginPath(); ctx.arc(px, drawY - 50, 11, 0, Math.PI * 2); ctx.fill();
+
+                const aiHop = Math.abs(Math.sin(aiX * 0.08)) * 18;
+                ctx.fillStyle = "#0d9488";
+                ctx.fillRect(aiX - 14, 370 - aiHop - 38, 28, 38);
+                ctx.fillStyle = "#fed7aa";
+                ctx.beginPath(); ctx.arc(aiX, 370 - aiHop - 50, 11, 0, Math.PI * 2); ctx.fill();
+            }, 30);
+
+            return () => {
+                ended = true; clearInterval(loop);
+                window.removeEventListener("pointerup", releaseJump);
+                window.removeEventListener("keydown", onKeyDown);
+                window.removeEventListener("keyup", onKeyUp);
+            };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 6: ĐẬP NIÊU ĐẤT (Bịt mắt vung gậy tre đập vỡ 4 niêu đất)
+        // ---------------------------------------------------------------------
+        function mountDapNieuGame(stage) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-3">
+                    <canvas id="c-dapnieu" width="800" height="420" class="w-full rounded-3xl border-2 border-amber-400 bg-indigo-950 shadow-2xl"></canvas>
+                    <button id="btn-dn-swing" class="btn-hue-gold w-full max-w-sm py-4 rounded-2xl font-black text-base">
+                        🏏 VUNG GẬY TRE ĐẬP NIÊU (SPACE / CHẠM)
+                    </button>
+                </div>
+            `;
+            const canvas = document.getElementById("c-dapnieu");
+            const ctx = canvas.getContext("2d");
+
+            const pots = [
+                { x: 200, broken: false },
+                { x: 340, broken: false },
+                { x: 480, broken: false },
+                { x: 620, broken: false }
+            ];
+            let walkX = 140, walkDir = 1;
+            let meter = 0, meterDir = 1;
+            let swingsLeft = 6;
+            let swingAnim = 0;
+            let ended = false;
+
+            function swingStick() {
+                if (ended || swingsLeft <= 0 || swingAnim > 0) return;
+                swingsLeft--;
+                swingAnim = 14;
+                const inGreen = meter >= 35 && meter <= 65;
+                const targetPot = pots.find(p => !p.broken && Math.abs(p.x - walkX) < 42);
+
+                if (inGreen && targetPot) {
+                    targetPot.broken = true;
+                    folkAudio.playGood();
+                    showToast("💥 CHOANG! Đập vỡ niêu đất chính xác!", "success");
+                    if (pots.every(p => p.broken)) {
+                        ended = true;
+                        setTimeout(() => finishMiniGame(true, "ĐẬP VỠ TOÀN BỘ NIÊU ĐẤT!", "Bịt mắt mà vung gậy chuẩn xác như thần! Quá đỉnh!", 600), 300);
+                        return;
+                    }
+                } else {
+                    folkAudio.playFail();
+                }
+
+                if (swingsLeft <= 0 && !pots.every(p => p.broken)) {
+                    ended = true;
+                    setTimeout(() => finishMiniGame(false, "HẾT LƯỢT VUNG GẬY RỒI!", "Hãy đợi nhân vật đi tới ngay dưới niêu và khóa thanh đo vào vùng xanh nhé!"), 300);
+                }
+            }
+
+            document.getElementById("btn-dn-swing").addEventListener("pointerdown", (e) => { e.preventDefault(); swingStick(); });
+            const onKey = (e) => { if (e.code === "Space" && !e.repeat) { e.preventDefault(); swingStick(); } };
+            window.addEventListener("keydown", onKey);
+
+            const loop = setInterval(() => {
+                if (ended) return;
+                walkX += walkDir * 2.3;
+                if (walkX > 660) walkDir = -1;
+                if (walkX < 140) walkDir = 1;
+
+                meter += meterDir * 3.6;
+                if (meter >= 100) { meter = 100; meterDir = -1; }
+                if (meter <= 0) { meter = 0; meterDir = 1; }
+                if (swingAnim > 0) swingAnim--;
+
+                ctx.clearRect(0, 0, 800, 420);
+                ctx.fillStyle = "#1e1b4b";
+                ctx.fillRect(0, 0, 800, 340);
+                ctx.fillStyle = "#78350f";
+                ctx.fillRect(0, 340, 800, 80);
+
+                ctx.strokeStyle = "#d97706";
+                ctx.lineWidth = 6;
+                ctx.beginPath(); ctx.moveTo(110, 75); ctx.lineTo(690, 75); ctx.stroke();
+
+                pots.forEach(p => {
+                    ctx.strokeStyle = "#fef3c7";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(p.x, 75); ctx.lineTo(p.x, 125); ctx.stroke();
+                    if (!p.broken) {
+                        ctx.fillStyle = "#b45309";
+                        ctx.beginPath(); ctx.arc(p.x, 145, 22, 0, Math.PI * 2); ctx.fill();
+                        ctx.strokeStyle = "#fde68a";
+                        ctx.stroke();
+                    } else {
+                        ctx.fillStyle = "#fde047";
+                        ctx.font = "bold 12px Inter";
+                        ctx.textAlign = "center";
+                        ctx.fillText("✨ VỠ!", p.x, 148);
+                    }
+                });
+
+                ctx.fillStyle = "#18181b";
+                ctx.fillRect(walkX - 50, 200, 100, 14);
+                ctx.fillStyle = "#10b981";
+                ctx.fillRect(walkX - 50 + 35, 200, 30, 14);
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(walkX - 50 + meter - 2, 197, 4, 20);
+
+                ctx.fillStyle = "#0d9488";
+                ctx.fillRect(walkX - 15, 255, 30, 85);
+                ctx.fillStyle = "#fed7aa";
+                ctx.beginPath(); ctx.arc(walkX, 238, 15, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#dc2626";
+                ctx.fillRect(walkX - 15, 233, 30, 7);
+
+                ctx.strokeStyle = "#fde047";
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(walkX + 10, 275);
+                if (swingAnim > 0) ctx.lineTo(walkX + 5, 165);
+                else ctx.lineTo(walkX + 45, 215);
+                ctx.stroke();
+
+                ctx.fillStyle = "#fde047";
+                ctx.font = "bold 14px Inter";
+                ctx.textAlign = "left";
+                ctx.fillText(`Số lượt vung gậy còn lại: ${swingsLeft} | Niêu vỡ: ${pots.filter(p => p.broken).length}/4`, 24, 34);
+            }, 30);
+
+            return () => { ended = true; clearInterval(loop); window.removeEventListener("keydown", onKey); };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 7: BẮN BI VÒNG TRÒN (Kéo thả vật lý 2D Top-down)
+        // ---------------------------------------------------------------------
+        function mountBanBiGame(stage) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-2">
+                    <canvas id="c-banbi" width="800" height="450" class="w-full rounded-3xl border-2 border-amber-400 bg-amber-900 shadow-2xl cursor-pointer touch-none"></canvas>
+                    <p class="text-xs text-amber-200">Kéo ngược chuột/ngón tay từ viên bi cái màu trắng rồi thả ra để bắn văng các viên bi ra khỏi vòng tròn!</p>
+                </div>
+            `;
+            const canvas = document.getElementById("c-banbi");
+            const ctx = canvas.getContext("2d");
+
+            const CX = 400, CY = 185, RING_R = 115;
+            const balls = [
+                { x: 400, y: 380, vx: 0, vy: 0, r: 14, color: "#ffffff", isCue: true, out: false },
+                { x: 375, y: 175, vx: 0, vy: 0, r: 13, color: "#ef4444", isCue: false, out: false },
+                { x: 425, y: 175, vx: 0, vy: 0, r: 13, color: "#3b82f6", isCue: false, out: false },
+                { x: 400, y: 155, vx: 0, vy: 0, r: 13, color: "#10b981", isCue: false, out: false },
+                { x: 400, y: 205, vx: 0, vy: 0, r: 13, color: "#f59e0b", isCue: false, out: false },
+                { x: 360, y: 200, vx: 0, vy: 0, r: 13, color: "#a855f7", isCue: false, out: false }
+            ];
+
+            let shotsLeft = 5;
+            let dragging = false, dragX = 0, dragY = 0;
+            let ended = false;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: ((clientX - rect.left) / rect.width) * 800,
+                    y: ((clientY - rect.top) / rect.height) * 450
+                };
+            }
+
+            canvas.addEventListener("pointerdown", (e) => {
+                if (ended || shotsLeft <= 0) return;
+                const pos = getPos(e);
+                const cue = balls[0];
+                if (Math.hypot(pos.x - cue.x, pos.y - cue.y) < 45 && Math.hypot(cue.vx, cue.vy) < 0.2) {
+                    dragging = true;
+                    dragX = pos.x; dragY = pos.y;
+                }
+            });
+
+            window.addEventListener("pointermove", (e) => {
+                if (!dragging) return;
+                const pos = getPos(e);
+                dragX = pos.x; dragY = pos.y;
+            });
+
+            window.addEventListener("pointerup", () => {
+                if (!dragging) return;
+                dragging = false;
+                const cue = balls[0];
+                const dx = cue.x - dragX;
+                const dy = cue.y - dragY;
+                const power = Math.min(18, Math.hypot(dx, dy) * 0.14);
+                if (power > 1.5) {
+                    const ang = Math.atan2(dy, dx);
+                    cue.vx = Math.cos(ang) * power;
+                    cue.vy = Math.sin(ang) * power;
+                    shotsLeft--;
+                    folkAudio.playRimShot();
+                }
+            });
+
+            const loop = setInterval(() => {
+                if (ended) return;
+
+                for (let i = 0; i < balls.length; i++) {
+                    const b = balls[i];
+                    if (b.out) continue;
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    b.vx *= 0.975;
+                    b.vy *= 0.975;
+                    if (Math.hypot(b.vx, b.vy) < 0.08) { b.vx = 0; b.vy = 0; }
+
+                    if (b.x < 25) { b.x = 25; b.vx *= -0.8; }
+                    if (b.x > 775) { b.x = 775; b.vx *= -0.8; }
+                    if (b.y < 25) { b.y = 25; b.vy *= -0.8; }
+                    if (b.y > 425) { b.y = 425; b.vy *= -0.8; }
+
+                    if (!b.isCue && Math.hypot(b.x - CX, b.y - CY) > RING_R + b.r) {
+                        b.out = true;
+                        folkAudio.playGood();
+                    }
+                }
+
+                for (let i = 0; i < balls.length; i++) {
+                    for (let j = i + 1; j < balls.length; j++) {
+                        const a = balls[i], b = balls[j];
+                        if (a.out || b.out) continue;
+                        const dist = Math.hypot(b.x - a.x, b.y - a.y);
+                        const minDist = a.r + b.r;
+                        if (dist > 0 && dist < minDist) {
+                            const nx = (b.x - a.x) / dist;
+                            const ny = (b.y - a.y) / dist;
+                            const overlap = (minDist - dist) / 2;
+                            a.x -= nx * overlap; a.y -= ny * overlap;
+                            b.x += nx * overlap; b.y += ny * overlap;
+
+                            const p = (a.vx * nx + a.vy * ny - b.vx * nx - b.vy * ny);
+                            a.vx -= p * nx; a.vy -= p * ny;
+                            b.vx += p * nx; b.vy += p * ny;
+                            folkAudio.playRimShot();
+                        }
+                    }
+                }
+
+                const targetsOut = balls.filter(b => !b.isCue && b.out).length;
+                const allStopped = balls.every(b => b.out || Math.hypot(b.vx, b.vy) === 0);
+
+                if (targetsOut >= 4) {
+                    ended = true;
+                    finishMiniGame(true, `BẮN VĂNG ${targetsOut}/5 VIÊN BI!`, "Đường ngắm búng bi chuẩn xác như cao thủ xứ Huế!", 600);
+                    return;
+                }
+                if (shotsLeft === 0 && allStopped) {
+                    ended = true;
+                    finishMiniGame(false, `MỚI ĂN ĐƯỢC ${targetsOut}/4 VIÊN BI!`, "Hãy kéo mạnh hơn để búng văng ít nhất 4 viên bi ra khỏi vòng tròn nhé!");
+                    return;
+                }
+
+                ctx.clearRect(0, 0, 800, 450);
+                ctx.fillStyle = "#b45309";
+                ctx.fillRect(0, 0, 800, 450);
+
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.arc(CX, CY, RING_R, 0, Math.PI * 2); ctx.stroke();
+
+                if (dragging) {
+                    const cue = balls[0];
+                    ctx.strokeStyle = "#fde047";
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([6, 6]);
+                    ctx.beginPath();
+                    ctx.moveTo(cue.x, cue.y);
+                    ctx.lineTo(cue.x + (cue.x - dragX) * 1.5, cue.y + (cue.y - dragY) * 1.5);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                balls.forEach(b => {
+                    if (b.out) return;
+                    ctx.fillStyle = b.color;
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = "#1c1917";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                });
+
+                ctx.fillStyle = "#fef3c7";
+                ctx.font = "bold 14px Inter";
+                ctx.fillText(`Bi ăn được: ${targetsOut}/4 | Lượt búng còn lại: ${shotsLeft}`, 24, 34);
+            }, 25);
+
+            return () => { ended = true; clearInterval(loop); };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 8: CÁ SẤU LÊN BỜ (Nhặt xu dưới nước & nhảy lên bờ né Cá Sấu)
+        // ---------------------------------------------------------------------
+        function mountCaSauGame(stage) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-3">
+                    <canvas id="c-casau" width="800" height="440" class="w-full rounded-3xl border-2 border-amber-400 bg-sky-900 shadow-2xl"></canvas>
+                    <p class="text-xs text-amber-200">Dùng phím <strong>Mũi tên / WASD</strong> chạy xuống nước nhặt đủ 8 Xu và né Cá Sấu! Đừng đứng trên bờ quá lâu kẻo hết Gan Dạ!</p>
+                </div>
+            `;
+            const canvas = document.getElementById("c-casau");
+            const ctx = canvas.getContext("2d");
+
+            let px = 400, py = 45;
+            let bravery = 100;
+            let coinsCollected = 0;
+            const keys = {};
+            const croc = { x: 150, y: 220, vx: 3.2, vy: 2.1 };
+            let coins = Array.from({ length: 8 }, () => ({
+                x: 90 + Math.random() * 620,
+                y: 120 + Math.random() * 200,
+                taken: false
+            }));
+            let ended = false;
+
+            const onDown = (e) => keys[e.code] = true;
+            const onUp = (e) => keys[e.code] = false;
+            window.addEventListener("keydown", onDown);
+            window.addEventListener("keyup", onUp);
+
+            const loop = setInterval(() => {
+                if (ended) return;
+                const spd = 4.4;
+                if (keys["ArrowUp"] || keys["KeyW"]) py -= spd;
+                if (keys["ArrowDown"] || keys["KeyS"]) py += spd;
+                if (keys["ArrowLeft"] || keys["KeyA"]) px -= spd;
+                if (keys["ArrowRight"] || keys["KeyD"]) px += spd;
+
+                px = Math.max(25, Math.min(775, px));
+                py = Math.max(25, Math.min(415, py));
+
+                const onShore = py < 85 || py > 355;
+                if (onShore) {
+                    bravery = Math.max(0, bravery - 0.55);
+                    if (bravery === 0) py = py < 85 ? 105 : 335;
+                } else {
+                    bravery = Math.min(100, bravery + 0.9);
+                    const ang = Math.atan2(py - croc.y, px - croc.x);
+                    croc.x += Math.cos(ang) * 3.1;
+                    croc.y += Math.sin(ang) * 3.1;
+
+                    if (Math.hypot(px - croc.x, py - croc.y) < 32) {
+                        ended = true;
+                        finishMiniGame(false, "CÁ SẤU ĐỚP TRÚNG RỒI!", "Hãy nhử Cá Sấu lại gần rồi chạy nhanh lên bờ thềm đình nhé!");
+                        return;
+                    }
+                }
+
+                coins.forEach(c => {
+                    if (!c.taken && Math.hypot(px - c.x, py - c.y) < 26) {
+                        c.taken = true;
+                        coinsCollected++;
+                        folkAudio.playGood();
+                    }
+                });
+
+                if (coinsCollected >= 8) {
+                    ended = true;
+                    finishMiniGame(true, "THU THẬP ĐỦ 8 ĐỒNG XU!", "Bạn quá nhanh nhẹn trước hàm Cá Sấu!", 600);
+                    return;
+                }
+
+                ctx.clearRect(0, 0, 800, 440);
+                ctx.fillStyle = "#0284c7";
+                ctx.fillRect(0, 85, 800, 270);
+                ctx.fillStyle = "#b45309";
+                ctx.fillRect(0, 0, 800, 85);
+                ctx.fillRect(0, 355, 800, 85);
+
+                coins.forEach(c => {
+                    if (c.taken) return;
+                    ctx.fillStyle = "#fde047";
+                    ctx.beginPath(); ctx.arc(c.x, c.y, 10, 0, Math.PI * 2); ctx.fill();
+                });
+
+                ctx.fillStyle = "#15803d";
+                ctx.beginPath(); ctx.ellipse(croc.x, croc.y, 32, 14, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#fde047";
+                ctx.beginPath(); ctx.arc(croc.x + 16, croc.y - 5, 3, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = "#fef3c7";
+                ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = "#dc2626";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 13px Inter";
+                ctx.fillText(`Xu: ${coinsCollected}/8 | Gan Dạ trên bờ: ${Math.round(bravery)}%`, 20, 28);
+            }, 25);
+
+            return () => { ended = true; clearInterval(loop); window.removeEventListener("keydown", onDown); window.removeEventListener("keyup", onUp); };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 9: CƯỚP CỜ SÂN ĐÌNH (Chờ hiệu lệnh lao ra tâm sân giành cờ)
+        // ---------------------------------------------------------------------
+        function mountCuopCoGame(stage, isTwoP) {
+            stage.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col items-center gap-3">
+                    <canvas id="c-cuopco" width="800" height="420" class="w-full rounded-3xl border-2 border-amber-400 bg-emerald-950 shadow-2xl"></canvas>
+                    <p class="text-xs text-amber-200">
+                        ${isTwoP ? "P1 dùng WASD (nhà trái) • P2 dùng Mũi tên (nhà phải)." : "Dùng Mũi tên hoặc WASD để lao ra cướp cờ và chạy về vạch nhà bên trái!"}
+                    </p>
+                </div>
+            `;
+            const canvas = document.getElementById("c-cuopco");
+            const ctx = canvas.getContext("2d");
+
+            let p1 = { x: 90, y: 210, score: 0 };
+            let p2 = { x: 710, y: 210, score: 0 };
+            let flag = { x: 400, y: 210, carrier: null };
+            let signalReady = false;
+            let statusText = "CHỜ HIỆU LỆNH QUẢN TRÒ...";
+            const keys = {};
+            let ended = false;
+
+            const readyTimeout = setTimeout(() => {
+                signalReady = true;
+                statusText = "🚩 CƯỚP CỜ!! LAO RA TÂM SÂN!";
+                folkAudio.playDrum();
+            }, 1600);
+
+            const onDown = (e) => keys[e.code] = true;
+            const onUp = (e) => keys[e.code] = false;
+            window.addEventListener("keydown", onDown);
+            window.addEventListener("keyup", onUp);
+
+            function resetPoint() {
+                p1.x = 90; p1.y = 210;
+                p2.x = 710; p2.y = 210;
+                flag = { x: 400, y: 210, carrier: null };
+            }
+
+            const loop = setInterval(() => {
+                if (ended) return;
+
+                if (signalReady) {
+                    const spd1 = flag.carrier === 1 ? 3.8 : 4.5;
+                    if (keys["KeyW"] || (!isTwoP && keys["ArrowUp"])) p1.y -= spd1;
+                    if (keys["KeyS"] || (!isTwoP && keys["ArrowDown"])) p1.y += spd1;
+                    if (keys["KeyA"] || (!isTwoP && keys["ArrowLeft"])) p1.x -= spd1;
+                    if (keys["KeyD"] || (!isTwoP && keys["ArrowRight"])) p1.x += spd1;
+
+                    if (isTwoP) {
+                        const spd2 = flag.carrier === 2 ? 3.8 : 4.5;
+                        if (keys["ArrowUp"]) p2.y -= spd2;
+                        if (keys["ArrowDown"]) p2.y += spd2;
+                        if (keys["ArrowLeft"]) p2.x -= spd2;
+                        if (keys["ArrowRight"]) p2.x += spd2;
+                    } else {
+                        const target = flag.carrier === 1 ? p1 : flag;
+                        const spdAi = flag.carrier === 2 ? 3.5 : 3.9;
+                        const ang = Math.atan2(target.y - p2.y, (flag.carrier === 2 ? 720 : target.x) - p2.x);
+                        p2.x += Math.cos(ang) * spdAi;
+                        p2.y += Math.sin(ang) * spdAi;
+                    }
+
+                    p1.x = Math.max(40, Math.min(760, p1.x)); p1.y = Math.max(40, Math.min(380, p1.y));
+                    p2.x = Math.max(40, Math.min(760, p2.x)); p2.y = Math.max(40, Math.min(380, p2.y));
+
+                    if (flag.carrier === null) {
+                        if (Math.hypot(p1.x - flag.x, p1.y - flag.y) < 26) { flag.carrier = 1; folkAudio.playRimShot(); }
+                        else if (Math.hypot(p2.x - flag.x, p2.y - flag.y) < 26) { flag.carrier = 2; folkAudio.playRimShot(); }
+                    } else if (flag.carrier === 1) {
+                        flag.x = p1.x; flag.y = p1.y;
+                        if (Math.hypot(p1.x - p2.x, p1.y - p2.y) < 26) {
+                            p2.score++; folkAudio.playFail(); resetPoint();
+                        } else if (p1.x <= 85) {
+                            p1.score++; folkAudio.playGood(); resetPoint();
+                        }
+                    } else if (flag.carrier === 2) {
+                        flag.x = p2.x; flag.y = p2.y;
+                        if (Math.hypot(p1.x - p2.x, p1.y - p2.y) < 26) {
+                            p1.score++; folkAudio.playGood(); resetPoint();
+                        } else if (p2.x >= 715) {
+                            p2.score++; folkAudio.playFail(); resetPoint();
+                        }
+                    }
+
+                    if (p1.score >= 3) {
+                        ended = true;
+                        finishMiniGame(true, "CHIẾN THẮNG CƯỚP CỜ 3 ĐIỂM!", "Tốc độ như gió lốc trên sân đình xứ Huế!", 550);
+                        return;
+                    }
+                    if (p2.score >= 3) {
+                        ended = true;
+                        finishMiniGame(false, isTwoP ? `${playerProfile.p2Name} THẮNG 3 ĐIỂM!` : "ĐỐI THỦ CƯỚP CỜ THẮNG!", "Hãy chạy ngoắt hướng để tránh bị đối thủ chạm người nhé!");
+                        return;
+                    }
+                }
+
+                ctx.clearRect(0, 0, 800, 420);
+                ctx.fillStyle = "#064e3b";
+                ctx.fillRect(0, 0, 800, 420);
+
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(85, 20); ctx.lineTo(85, 400); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(715, 20); ctx.lineTo(715, 400); ctx.stroke();
+                ctx.beginPath(); ctx.arc(400, 210, 45, 0, Math.PI * 2); ctx.stroke();
+
+                ctx.fillStyle = "#38bdf8";
+                ctx.beginPath(); ctx.arc(p1.x, p1.y, 16, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#f59e0b";
+                ctx.beginPath(); ctx.arc(p2.x, p2.y, 16, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = "#ef4444";
+                ctx.beginPath(); ctx.moveTo(flag.x, flag.y - 22); ctx.lineTo(flag.x + 24, flag.y - 12); ctx.lineTo(flag.x, flag.y - 2); ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = "#ffffff";
+                ctx.beginPath(); ctx.moveTo(flag.x, flag.y - 22); ctx.lineTo(flag.x, flag.y + 10); ctx.stroke();
+
+                ctx.fillStyle = "#fde047";
+                ctx.font = "900 16px Inter";
+                ctx.textAlign = "center";
+                ctx.fillText(`${playerProfile.name}: ${p1.score}  |  ${statusText}  |  Đối thủ: ${p2.score}`, 400, 34);
+            }, 25);
+
+            return () => { ended = true; clearTimeout(readyTimeout); clearInterval(loop); window.removeEventListener("keydown", onDown); window.removeEventListener("keyup", onUp); };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 10: Ô ĂN QUAN CHIẾU CÓI (10 ô dân + 2 ô Quan bán nguyệt)
+        // ---------------------------------------------------------------------
+        function mountOAnQuanGame(stage) {
+            let board = [10, 5, 5, 5, 5, 5, 10, 5, 5, 5, 5, 5];
+            let pScore = 0, aiScore = 0;
+            let selectedCell = null;
+            let turn = "PLAYER";
+
+            function renderBoard() {
+                stage.innerHTML = `
+                    <div class="w-full max-w-3xl bg-amber-950/90 border-2 border-amber-400 rounded-3xl p-5 flex flex-col gap-4 shadow-2xl">
+                        <div class="flex items-center justify-between text-xs sm:text-sm font-black">
+                            <span class="text-teal-300">Sỏi của ${playerProfile.name}: <strong class="text-lg text-white">${pScore}</strong></span>
+                            <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300">${turn === "PLAYER" ? "LƯỢT CỦA BẠN" : "MÁY ĐANG RẢI SỎI..."}</span>
+                            <span class="text-rose-300">Sỏi của Máy: <strong class="text-lg text-white">${aiScore}</strong></span>
+                        </div>
+
+                        <div class="grid grid-cols-7 gap-2 items-center bg-amber-200/95 p-4 rounded-2xl border-4 border-amber-700 text-stone-900">
+                            <div class="row-span-2 h-36 rounded-l-full bg-amber-400 border-2 border-amber-800 flex flex-col items-center justify-center font-black">
+                                <span class="text-[10px] uppercase">QUAN</span>
+                                <span class="text-2xl text-red-800">${board[0]}</span>
+                            </div>
+
+                            ${[11, 10, 9, 8, 7].map(idx => `
+                                <div class="h-16 rounded-xl bg-amber-100 border-2 border-amber-700 flex flex-col items-center justify-center font-bold">
+                                    <span class="text-[9px] text-stone-500">Ô ${idx}</span>
+                                    <span class="text-lg">${board[idx]}</span>
+                                </div>
+                            `).join("")}
+
+                            <div class="row-span-2 h-36 rounded-r-full bg-amber-400 border-2 border-amber-800 flex flex-col items-center justify-center font-black">
+                                <span class="text-[10px] uppercase">QUAN</span>
+                                <span class="text-2xl text-red-800">${board[6]}</span>
+                            </div>
+
+                            ${[1, 2, 3, 4, 5].map(idx => `
+                                <button onclick="window._oaqSelect(${idx})" ${turn !== "PLAYER" || board[idx] === 0 ? "disabled" : ""}
+                                        class="h-16 rounded-xl border-2 flex flex-col items-center justify-center font-black transition ${selectedCell === idx ? "bg-teal-400 border-teal-900 scale-105" : "bg-amber-50 hover:bg-amber-300 border-amber-700"
+                    } disabled:opacity-40">
+                                    <span class="text-[9px] text-stone-600">Ô ${idx}</span>
+                                    <span class="text-lg text-teal-900">${board[idx]}</span>
+                                </button>
+                            `).join("")}
+                        </div>
+
+                        <div class="flex items-center justify-center gap-4">
+                            ${selectedCell ? `
+                                <button onclick="window._oaqSow(-1)" class="btn-hue-jade px-6 py-3 rounded-xl font-black text-white text-xs sm:text-sm">
+                                    ⬅ RẢI SANG TRÁI
+                                </button>
+                                <button onclick="window._oaqSow(1)" class="btn-hue-red px-6 py-3 rounded-xl font-black text-white text-xs sm:text-sm">
+                                    RẢI SANG PHẢI ➡
+                                </button>
+                            ` : `<span class="text-xs text-amber-200">Bấm chọn 1 ô dân hàng dưới của bạn rồi chọn hướng rải Trái hoặc Phải!</span>`}
+                        </div>
+                    </div>
+                `;
+            }
+
+            function executeSow(startIdx, dir, isPlayer) {
+                let idx = startIdx;
+                let hand = board[idx];
+                board[idx] = 0;
+                let gained = 0;
+
+                while (hand > 0) {
+                    idx = (idx + dir + 12) % 12;
+                    board[idx]++;
+                    hand--;
+                    if (hand === 0) {
+                        const nextIdx = (idx + dir + 12) % 12;
+                        if (nextIdx !== 0 && nextIdx !== 6 && board[nextIdx] > 0) {
+                            hand = board[nextIdx];
+                            board[nextIdx] = 0;
+                            idx = nextIdx;
+                        } else if (board[nextIdx] === 0) {
+                            let checkEmpty = nextIdx;
+                            while (true) {
+                                const target = (checkEmpty + dir + 12) % 12;
+                                if (board[target] > 0) {
+                                    gained += board[target];
+                                    board[target] = 0;
+                                    checkEmpty = (target + dir + 12) % 12;
+                                    if (board[checkEmpty] !== 0) break;
+                                } else {
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (isPlayer) pScore += gained;
+                else aiScore += gained;
+                folkAudio.playGood();
+            }
+
+            function checkEndGame() {
+                if (board[0] === 0 && board[6] === 0) {
+                    for (let i = 1; i <= 5; i++) { pScore += board[i]; board[i] = 0; }
+                    for (let i = 7; i <= 11; i++) { aiScore += board[i]; board[i] = 0; }
+                    renderBoard();
+                    setTimeout(() => {
+                        if (pScore >= aiScore) finishMiniGame(true, `THẮNG Ô ĂN QUAN (${pScore} - ${aiScore})!`, "Nước rải sỏi ăn chuỗi quá cao tay!", 650);
+                        else finishMiniGame(false, `THUA Ô ĂN QUAN (${pScore} - ${aiScore})!`, "Hãy tính toán ô trống để ăn chuỗi nhiều sỏi hơn nhé!");
+                    }, 400);
+                    return true;
+                }
+                return false;
+            }
+
+            window._oaqSelect = (idx) => {
+                selectedCell = idx;
+                folkAudio.playRimShot();
+                renderBoard();
+            };
+
+            window._oaqSow = (dir) => {
+                if (!selectedCell) return;
+                const cell = selectedCell;
+                selectedCell = null;
+                executeSow(cell, dir, true);
+                if (checkEndGame()) return;
+
+                if ([7, 8, 9, 10, 11].every(i => board[i] === 0)) {
+                    aiScore = Math.max(0, aiScore - 5);
+                    [7, 8, 9, 10, 11].forEach(i => board[i] = 1);
+                }
+
+                turn = "AI";
+                renderBoard();
+                setTimeout(() => {
+                    const valid = [7, 8, 9, 10, 11].filter(i => board[i] > 0);
+                    if (valid.length > 0) {
+                        const pick = valid[Math.floor(Math.random() * valid.length)];
+                        executeSow(pick, Math.random() < 0.5 ? 1 : -1, false);
+                    }
+                    if (checkEndGame()) return;
+                    if ([1, 2, 3, 4, 5].every(i => board[i] === 0)) {
+                        pScore = Math.max(0, pScore - 5);
+                        [1, 2, 3, 4, 5].forEach(i => board[i] = 1);
+                    }
+                    turn = "PLAYER";
+                    renderBoard();
+                }, 650);
+            };
+
+            renderBoard();
+            return () => { };
+        }
+
+        // ---------------------------------------------------------------------
+        // TRÒ 11: CỜ GÁNH XỨ HUẾ 5x5 (Xen vào giữa 2 quân địch để lật màu)
+        // ---------------------------------------------------------------------
+        function mountCoGanhGame(stage) {
+            let grid = [
+                [2, 2, 2, 2, 2],
+                [2, 0, 0, 0, 2],
+                [1, 0, 0, 0, 2],
+                [1, 0, 0, 0, 1],
+                [1, 1, 1, 1, 1]
+            ];
+            let selected = null;
+            let turn = 1;
+
+            function checkGanh(r, c, player) {
+                const enemy = player === 1 ? 2 : 1;
+                const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+                let flipped = 0;
+                dirs.forEach(([dr, dc]) => {
+                    const r1 = r - dr, c1 = c - dc;
+                    const r2 = r + dr, c2 = c + dc;
+                    if (r1 >= 0 && r1 < 5 && c1 >= 0 && c1 < 5 && r2 >= 0 && r2 < 5 && c2 >= 0 && c2 < 5) {
+                        if (grid[r1][c1] === enemy && grid[r2][c2] === enemy) {
+                            grid[r1][c1] = player;
+                            grid[r2][c2] = player;
+                            flipped += 2;
+                        }
+                    }
+                });
+                if (flipped > 0) folkAudio.playGood();
+            }
+
+            function renderCoGanh() {
+                const p1Count = grid.flat().filter(v => v === 1).length;
+                const p2Count = grid.flat().filter(v => v === 2).length;
+
+                stage.innerHTML = `
+                    <div class="w-full max-w-xl bg-amber-950/95 border-2 border-amber-400 rounded-3xl p-5 flex flex-col items-center gap-4 shadow-2xl">
+                        <div class="w-full flex items-center justify-between text-xs sm:text-sm font-black">
+                            <span class="text-rose-400">Quân Đỏ (Bạn): ${p1Count}</span>
+                            <span class="text-amber-300">${turn === 1 ? "LƯỢT QUÂN ĐỎ" : "QUÂN XANH ĐANG ĐI..."}</span>
+                            <span class="text-sky-400">Quân Xanh (AI): ${p2Count}</span>
+                        </div>
+
+                        <div class="grid grid-cols-5 gap-2.5 bg-amber-200 p-4 rounded-2xl border-4 border-amber-700">
+                            ${grid.map((row, r) => row.map((val, c) => {
+                    const isSel = selected && selected.r === r && selected.c === c;
+                    return `
+                                    <button onclick="window._cgClick(${r}, ${c})"
+                                            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 flex items-center justify-center transition ${val === 1
+                            ? `bg-red-600 border-amber-200 shadow-md ${isSel ? "ring-4 ring-teal-400 scale-110" : ""}`
+                            : val === 2
+                                ? "bg-blue-700 border-amber-200 shadow-md"
+                                : "bg-amber-900/15 hover:bg-teal-500/30 border-amber-800/40"
+                        }">
+                                        ${val === 1 ? "🔴" : val === 2 ? "🔵" : ""}
+                                    </button>
+                                `;
+                }).join("")).join("")}
+                        </div>
+                        <p class="text-xs text-amber-200 text-center">Di chuyển quân Đỏ sang ô trống kề bên và xen vào giữa 2 quân Xanh để "gánh" lật màu!</p>
+                    </div>
+                `;
+
+                if (p2Count <= 1) {
+                    setTimeout(() => finishMiniGame(true, "ĐẠI THẮNG CỜ GÁNH XỨ HUẾ!", "Bạn đã thu phục gần như toàn bộ bàn cờ!", 700), 300);
+                } else if (p1Count <= 1) {
+                    setTimeout(() => finishMiniGame(false, "QUÂN XANH ĐÃ GÁNH HẾT CỜ!", "Hãy đi quân xen vào giữa 2 quân địch trên đường thẳng nhé!"), 300);
+                }
+            }
+
+            window._cgClick = (r, c) => {
+                if (turn !== 1) return;
+                if (grid[r][c] === 1) {
+                    selected = { r, c };
+                    folkAudio.playRimShot();
+                    renderCoGanh();
+                } else if (grid[r][c] === 0 && selected) {
+                    if (Math.abs(r - selected.r) <= 1 && Math.abs(c - selected.c) <= 1) {
+                        grid[selected.r][selected.c] = 0;
+                        grid[r][c] = 1;
+                        selected = null;
+                        checkGanh(r, c, 1);
+                        turn = 2;
+                        renderCoGanh();
+
+                        setTimeout(() => {
+                            const aiMoves = [];
+                            for (let ir = 0; ir < 5; ir++) {
+                                for (let ic = 0; ic < 5; ic++) {
+                                    if (grid[ir][ic] !== 2) continue;
+                                    for (let dr = -1; dr <= 1; dr++) {
+                                        for (let dc = -1; dc <= 1; dc++) {
+                                            const nr = ir + dr, nc = ic + dc;
+                                            if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && grid[nr][nc] === 0) {
+                                                aiMoves.push({ fr: ir, fc: ic, tr: nr, tc: nc });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (aiMoves.length > 0) {
+                                const m = aiMoves[Math.floor(Math.random() * aiMoves.length)];
+                                grid[m.fr][m.fc] = 0;
+                                grid[m.tr][m.tc] = 2;
+                                checkGanh(m.tr, m.tc, 2);
+                            }
+                            turn = 1;
+                            renderCoGanh();
+                        }, 450);
+                    }
+                }
+            };
+
+            renderCoGanh();
+            return () => { };
+        }
+
+        // =====================================================================
+        // H. KHỞI TẠO BAN ĐẦU KHI MỞ TRANG
+        // =====================================================================
+        initFirebaseService(); // Chức năng: Tự động kiểm tra và kết nối Firebase khi mở trang
+        clearAiAndResetHome(); // Chức năng: Khởi tạo 8 ô trên Trang chủ (ô 1 là người chơi, 7 ô trống)
+        resetCoopAiTournament(); // Chức năng: Khởi tạo đội hình 8 cao thủ cho tab Đấu cùng AI
+        switchNavigationTab("home"); // Chức năng: Hiển thị Trang chủ Hội Làng mặc định
+    </script>
+</body>
+
+</html>
