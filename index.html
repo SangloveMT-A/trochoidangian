@@ -431,97 +431,104 @@
         </div>
 
         <!-- ================================================================= -->
-        <!-- TAB 2: CHƠI CÙNG BẠN BÈ (FIREBASE ONLINE & 2 NGƯỜI CHUNG MÁY)      -->
+        <!-- TAB 2: CHƠI CÙNG BẠN BÈ (KẾT NỐI TRỰC TUYẾN FIREBASE)             -->
         <!-- ================================================================= -->
         <div id="tab-view-friends" class="hidden flex-col gap-6">
-            <section class="games-hue rounded-3xl p-6 sm:p-8 border-2 border-amber-400/60">
-                <div class="max-w-xl mx-auto flex flex-col items-center gap-4 text-center">
-                    <div class="flex flex-wrap items-center justify-center gap-2">
-                        <span
-                            class="px-3 py-1 rounded-full bg-red-900/60 border border-amber-400 text-amber-200 text-[11px] font-black uppercase tracking-widest">
-                            ĐẤU ĐÔI & PHÒNG FIREBASE TRỰC TUYẾN
-                        </span>
+            <section class="games-hue rounded-3xl p-6 sm:p-10 border-2 border-amber-400/60 shadow-2xl">
+                <div class="max-w-xl mx-auto flex flex-col items-center gap-6">
+
+                    <!-- Tiêu đề & Trạng thái kết nối Firebase -->
+                    <div class="text-center">
+                        <div
+                            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/70 border border-amber-400 text-amber-200 text-[11px] font-black uppercase tracking-widest">
+                            <span>SẢNH CHƠI CÙNG BẠN BÈ</span>
+                            <span>•</span>
+                            <span id="fb-connection-badge" class="text-amber-400">⏳ Đang kết nối...</span>
+                        </div>
+                        <h2 class="font-imperial text-2xl sm:text-3xl font-black text-white mt-3">
+                            RỦ BẠN TRẨY HỘI SÂN ĐÌNH
+                        </h2>
+                        <p class="text-xs sm:text-sm text-amber-100/75 mt-1">
+                            Tạo phòng mới để nhận mã ID 4 ký tự gửi cho bạn bè, hoặc nhập ID phòng để cùng vào sới hội.
+                        </p>
+                    </div>
+
+                    <!-- Khung chứa 2 hàng nhập liệu & nút bấm -->
+                    <div
+                        class="w-full p-5 sm:p-6 rounded-2xl bg-stone-950/85 border border-amber-500/35 flex flex-col gap-4 shadow-inner">
+
+                        <!-- HÀNG 1: Ô nhập "Tên của bạn" + Nút "Tạo phòng" -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                            <div class="sm:col-span-7 relative">
+                                <label for="friend-custom-name"
+                                    class="block text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-1 ml-1">
+                                    Tên của bạn
+                                </label>
+                                <input id="friend-custom-name" type="text" maxlength="16" value="CẬU ẤM XỨ HUẾ"
+                                    placeholder="Nhập tên nhân vật..."
+                                    oninput="document.getElementById('player-name-input').value = this.value; updatePlayerProfile(false);"
+                                    class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-amber-500/50 focus:border-amber-300 text-white font-extrabold text-sm uppercase tracking-wide focus:outline-none transition">
+                            </div>
+                            <div class="sm:col-span-5 sm:self-end">
+                                <button type="button" onclick="handleCreateFriendRoom()"
+                                    class="btn-hue-red w-full py-3.5 px-4 rounded-xl font-black text-xs sm:text-sm text-white uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
+                                    <span>🏮</span>
+                                    <span>Tạo phòng</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Đường kẻ phân cách -->
+                        <div class="border-t border-amber-500/15 my-0.5"></div>
+
+                        <!-- HÀNG 2: Ô nhập "ID phòng" + Nút "Tham gia" -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                            <div class="sm:col-span-7 relative">
+                                <label for="friend-room-id"
+                                    class="block text-[10px] font-bold uppercase tracking-wider text-teal-300 mb-1 ml-1">
+                                    ID phòng
+                                </label>
+                                <input id="friend-room-id" type="text" maxlength="6" placeholder="Nhập mã ID phòng..."
+                                    class="w-full px-4 py-3 rounded-xl bg-stone-900 border border-teal-500/50 focus:border-teal-300 text-white font-black text-sm uppercase tracking-widest focus:outline-none transition">
+                            </div>
+                            <div class="sm:col-span-5 sm:self-end">
+                                <button type="button" onclick="handleJoinFriendRoom()"
+                                    class="btn-hue-jade w-full py-3.5 px-4 rounded-xl font-black text-xs sm:text-sm text-white uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer">
+                                    <span>🚪</span>
+                                    <span>Tham gia</span>
+                                </button>
+                            </div>
+                        </div>
 
                     </div>
 
-                    <h2 class="font-imperial text-xl sm:text-2xl font-black text-white">RỦ BẠN TRẨY HỘI SÂN ĐÌNH</h2>
-                    <p class="text-xs text-amber-100/80">
-                        Bạn có thể tạo/vào phòng trực tuyến 4 ký tự qua <strong>Firebase Firestore</strong> hoặc đấu đôi
-                        2 người ngay trên cùng một máy!
-                    </p>
-
-                    <!-- Khối 1: Tạo & Vào phòng trực tuyến qua Firebase -->
-                    <div
-                        class="w-full p-4 rounded-2xl bg-stone-950/90 border border-amber-500/40 flex flex-col gap-3 text-left">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-black uppercase tracking-wider text-amber-300">🌐 Phòng Hội Làng
-                                Firebase</span>
-                            <span id="fb-connection-badge" class="text-[11px] font-bold text-amber-400">Chế độ Offline /
-                                Chờ cấu hình Firebase</span>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <button onclick="createFirebaseRoom()"
-                                class="btn-hue-red py-3 rounded-xl font-black text-xs text-white">
-                                🏮 TẠO PHÒNG MỚI (MÃ 4 KÝ TỰ)
-                            </button>
-
+                    <!-- Khung hiển thị trạng thái phòng Firebase theo thời gian thực -->
+                    <div id="friend-room-status-box"
+                        class="hidden w-full p-4 rounded-2xl bg-teal-950/75 border border-teal-400/60 text-xs sm:text-sm text-teal-100 flex flex-col gap-3">
+                        <div
+                            class="flex flex-wrap items-center justify-between gap-2 border-b border-teal-500/30 pb-2.5">
                             <div class="flex items-center gap-2">
-                                <input id="join-room-code-input" type="text" maxlength="4" placeholder="MÃ PHÒNG"
-                                    class="w-full px-3 py-3 rounded-xl bg-stone-900 border border-teal-400/60 text-center text-white font-black text-sm uppercase tracking-widest focus:outline-none">
-                                <button onclick="joinFirebaseRoom()"
-                                    class="btn-hue-jade px-4 py-3 rounded-xl font-black text-xs text-white shrink-0">
-                                    VÀO PHÒNG
+                                <span class="text-teal-300 font-bold">Mã ID phòng:</span>
+                                <strong id="display-room-id"
+                                    class="text-xl text-amber-300 tracking-widest">----</strong>
+                                <button type="button" onclick="copyRoomCodeToClipboard()"
+                                    class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-[11px] transition cursor-pointer">
+                                    📋 Sao chép
                                 </button>
                             </div>
+                            <button type="button" onclick="switchNavigationTab('home')"
+                                class="btn-hue-gold px-4 py-2 rounded-xl font-black text-xs shrink-0 cursor-pointer">
+                                Vào Sới Hội ▶
+                            </button>
                         </div>
-
-                        <!-- Hiển thị thông tin phòng đang kết nối -->
-                        <div id="active-fb-room-box"
-                            class="hidden p-3 rounded-xl bg-teal-950/60 border border-teal-400/60 text-xs text-teal-100 flex flex-col gap-2">
-                            <div class="flex items-center justify-between">
-                                <span>Mã phòng đang mở: <strong id="active-fb-room-code"
-                                        class="text-lg text-amber-300 tracking-widest ml-1">----</strong></span>
-                                <button onclick="copyRoomCodeToClipboard()"
-                                    class="px-2.5 py-1 rounded-lg bg-amber-500 text-stone-950 font-black text-[11px]">
-                                    📋 Sao chép mã
-                                </button>
-                            </div>
-                            <div id="active-fb-room-members" class="text-[11px] text-teal-200">Đang đồng bộ thành
-                                viên...</div>
+                        <div id="display-room-members" class="text-xs text-teal-200 leading-relaxed">
+                            Đang đồng bộ danh sách người chơi qua Firebase...
                         </div>
                     </div>
 
-                    <!-- Khối 2: Đấu đôi 2 người chung một máy -->
-                    <div
-                        class="w-full p-4 rounded-2xl bg-stone-950/75 border border-teal-500/35 flex flex-col gap-3 text-left">
-                        <span class="text-xs font-black uppercase tracking-wider text-teal-300">⚔️ Đấu Đôi 2 Người Chung
-                            Máy</span>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[11px] font-bold text-amber-300 mb-1">Người Chơi 1 (Phím
-                                    trái)</label>
-                                <input id="friends-p1-name" type="text" maxlength="16" value="CẬU ẤM XỨ HUẾ"
-                                    oninput="syncFriendName(1, this.value)"
-                                    class="w-full px-3 py-2.5 rounded-xl bg-stone-900 border border-amber-500/40 text-white font-bold text-xs uppercase focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-teal-300 mb-1">Người Chơi 2 (Phím
-                                    phải)</label>
-                                <input id="friends-p2-name" type="text" maxlength="16" value="CÔ TÔN NỮ"
-                                    oninput="syncFriendName(2, this.value)"
-                                    class="w-full px-3 py-2.5 rounded-xl bg-stone-900 border border-teal-500/40 text-white font-bold text-xs uppercase focus:outline-none">
-                            </div>
-                        </div>
-                        <button onclick="setupTwoPlayerLocalMode()"
-                            class="btn-hue-gold w-full py-3 rounded-xl font-black text-xs sm:text-sm">
-                            ▶ BẬT CHẾ ĐỘ 2 NGƯỜI CHUNG MÁY & CHỌN TRÒ CHƠI
-                        </button>
-                    </div>
                 </div>
             </section>
         </div>
-
         <!-- ================================================================= -->
         <!-- TAB 3: TRẨY HỘI 11 VÒNG (CHƠI CÁ NHÂN XUYÊN SUỐT)                 -->
         <!-- ================================================================= -->
@@ -809,80 +816,145 @@
             }
         }
 
-        async function createFirebaseRoom() {
-            const code = Math.random().toString(36).substring(2, 6).toUpperCase();
-            currentFirebaseRoomCode = code;
 
-            if (fbDb && fbUserUid) {
-                try {
-                    const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(code);
-                    await roomRef.set({
-                        code: code,
-                        hostUid: fbUserUid,
-                        createdAt: Date.now(),
-                        members: [{ uid: fbUserUid, name: playerProfile.name, isHost: true }]
-                    });
-                    listenToFirebaseRoom(code);
-                    folkAudio.playGood();
-                    showToast(`Đã tạo phòng trực tuyến Firebase: ${code}`, "success");
-                    return;
-                } catch (err) {
-                    console.warn("Lỗi ghi phòng Firestore:", err);
-                }
+
+        // Tạo phòng mới và lưu lên Firebase Firestore
+        async function handleCreateFriendRoom() {
+            const nameInput = (document.getElementById("friend-custom-name").value || "").trim().toUpperCase() || "CẬU ẤM XỨ HUẾ";
+            document.getElementById("player-name-input").value = nameInput;
+            updatePlayerProfile(false);
+
+            // Đảm bảo Firebase đã khởi tạo từ window.CUSTOM_FIREBASE_CONFIG ở đầu trang
+            if (!fbDb || !fbUserUid) {
+                await initFirebaseService();
             }
 
-            document.getElementById("active-fb-room-box").classList.remove("hidden");
-            document.getElementById("active-fb-room-code").textContent = code;
-            document.getElementById("active-fb-room-members").textContent = `Chủ phòng: ${playerProfile.name} (Hãy dán mã Firebase để đồng bộ qua mạng)`;
-            folkAudio.playGood();
-            showToast(`Đã tạo mã phòng Hội Làng: ${code}`, "success");
+            if (!fbDb || !fbUserUid) {
+                showToast("Không thể kết nối Firebase! Hãy kiểm tra mạng hoặc bật Anonymous Auth trong Firebase Console.", "info");
+                return;
+            }
+
+            const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
+            try {
+                const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(roomId);
+                await roomRef.set({
+                    code: roomId,
+                    hostUid: fbUserUid,
+                    createdAt: Date.now(),
+                    members: [{ uid: fbUserUid, name: nameInput, isHost: true }]
+                });
+
+                currentFirebaseRoomCode = roomId;
+                document.getElementById("friend-room-id").value = roomId;
+                listenToFriendRoom(roomId);
+
+                folkAudio.playGood();
+                showToast(`Đã tạo phòng Firebase thành công! Mã ID: ${roomId}`, "success");
+            } catch (err) {
+                console.error("Lỗi tạo phòng Firebase:", err);
+                showToast("Lỗi ghi dữ liệu lên Firestore! Kiểm tra lại Rules của Firestore.", "info");
+            }
         }
 
-        async function joinFirebaseRoom() {
-            const code = (document.getElementById("join-room-code-input").value || "").trim().toUpperCase();
-            if (code.length < 4) {
-                showToast("Vui lòng nhập đủ 4 ký tự mã phòng!", "info");
+        // Tham gia phòng có sẵn bằng ID qua Firebase Firestore
+        async function handleJoinFriendRoom() {
+            const nameInput = (document.getElementById("friend-custom-name").value || "").trim().toUpperCase() || "CẬU ẤM XỨ HUẾ";
+            document.getElementById("player-name-input").value = nameInput;
+            updatePlayerProfile(false);
+
+            const roomId = (document.getElementById("friend-room-id").value || "").trim().toUpperCase();
+            if (!roomId) {
+                showToast("Vui lòng nhập ID phòng trước khi bấm Tham gia!", "info");
+                document.getElementById("friend-room-id").focus();
                 return;
             }
+
             if (!fbDb || !fbUserUid) {
-                showToast("Bạn chưa gắn cấu hình Firebase! Bấm '⚙️ Dán mã Firebase nhanh' để kết nối online.", "info");
+                await initFirebaseService();
+            }
+
+            if (!fbDb || !fbUserUid) {
+                showToast("Chưa kết nối được máy chủ Firebase!", "info");
                 return;
             }
+
             try {
-                const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(code);
+                const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(roomId);
                 const snap = await roomRef.get();
+
                 if (!snap.exists) {
-                    showToast(`Không tìm thấy phòng mã ${code}!`, "info");
+                    showToast(`Không tìm thấy phòng có ID "${roomId}"!`, "info");
                     return;
                 }
+
                 const data = snap.data();
                 const members = Array.isArray(data.members) ? data.members : [];
-                if (!members.some(m => m.uid === fbUserUid)) {
-                    members.push({ uid: fbUserUid, name: playerProfile.name, isHost: false });
-                    await roomRef.update({ members });
+
+                if (members.length >= 8 && !members.some(m => m.uid === fbUserUid)) {
+                    showToast("Phòng đã đủ tối đa 8 người chơi!", "info");
+                    return;
                 }
-                currentFirebaseRoomCode = code;
-                listenToFirebaseRoom(code);
+
+                // Cập nhật tên nếu đã có trong phòng, hoặc thêm mới vào danh sách
+                const existingIdx = members.findIndex(m => m.uid === fbUserUid);
+                if (existingIdx !== -1) {
+                    members[existingIdx].name = nameInput;
+                } else {
+                    members.push({ uid: fbUserUid, name: nameInput, isHost: false });
+                }
+
+                await roomRef.update({ members });
+                currentFirebaseRoomCode = roomId;
+                listenToFriendRoom(roomId);
+
                 folkAudio.playGood();
-                showToast(`Đã vào phòng Hội Làng ${code}!`, "success");
-            } catch (e) {
+                showToast(`Đã tham gia phòng ${roomId} thành công!`, "success");
+            } catch (err) {
+                console.error("Lỗi tham gia phòng Firebase:", err);
                 showToast("Lỗi khi tham gia phòng Firebase!", "info");
             }
         }
 
-        function listenToFirebaseRoom(code) {
+        // Lắng nghe thời gian thực và đồng bộ danh sách bạn bè vào Sới Hội
+        function listenToFriendRoom(roomId) {
             if (roomUnsubscribe) roomUnsubscribe();
-            const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(code);
+            const roomRef = fbDb.collection(`${window.FIREBASE_APP_NAMESPACE}_rooms`).doc(roomId);
+
             roomUnsubscribe = roomRef.onSnapshot(doc => {
                 if (!doc.exists) return;
                 const data = doc.data();
                 const members = data.members || [];
-                document.getElementById("active-fb-room-box").classList.remove("hidden");
-                document.getElementById("active-fb-room-code").textContent = code;
-                document.getElementById("active-fb-room-members").textContent =
-                    `Thành viên trong phòng (${members.length}/8): ` + members.map(m => m.name).join(" • ");
+
+                // Hiển thị trên hộp trạng thái của Tab Chơi cùng bạn bè
+                document.getElementById("friend-room-status-box").classList.remove("hidden");
+                document.getElementById("display-room-id").textContent = roomId;
+                document.getElementById("display-room-members").innerHTML =
+                    `<strong>Thành viên trong phòng (${members.length}/8):</strong> ` +
+                    members.map(m => `<span class="inline-block px-2 py-0.5 mx-0.5 rounded bg-teal-900 border border-teal-400/50 text-amber-200 font-bold">${m.name}${m.isHost ? " 👑" : ""}</span>`).join(" ");
+
+                // Đồng bộ trực tiếp danh sách bạn bè vào 8 ô thí sinh ở Trang Chủ
+                const newSlots = [];
+                for (let i = 0; i < 8; i++) {
+                    if (members[i]) {
+                        const isMe = members[i].uid === fbUserUid;
+                        newSlots.push({
+                            slotIndex: i,
+                            isEmpty: false,
+                            id: isMe ? playerProfile.id : members[i].uid,
+                            name: members[i].name,
+                            isHuman: true,
+                            isBot: false
+                        });
+                    } else {
+                        newSlots.push(createEmptySlot(i));
+                    }
+                }
+                homeState.slots = newSlots;
+                if (members[1]) playerProfile.p2Name = members[1].name;
+                renderAllViews();
             });
         }
+
 
         function copyRoomCodeToClipboard() {
             if (!currentFirebaseRoomCode) return;
